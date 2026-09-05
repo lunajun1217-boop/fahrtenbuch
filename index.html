@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a68ff">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fahrtenbuch">
@@ -85,8 +86,7 @@
   .kmhint{font-size:11px;color:var(--blue);font-weight:600;margin:-7px 2px 0;padding-bottom:2px}
   .maplink{margin-bottom:2px;font-size:14px;padding:11px}
   .maplink.off{opacity:.45;pointer-events:none}
-  .sch .addr{background:none;border:none;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer}
-  .sch .has{color:var(--green)}
+
   .seg{display:flex;background:var(--chip);border-radius:11px;padding:3px;margin-bottom:13px}
   .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-weight:700;
     font-size:13px;padding:8px;border-radius:9px;cursor:pointer}
@@ -156,16 +156,22 @@
   .sheet-in{background:var(--card);width:100%;max-width:680px;border-radius:20px 20px 0 0;
     padding:16px 14px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
   .sheet-in h3{margin:0 0 12px;font-size:16px}
-  .sch{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}
-  .sch span.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sch .g{font-size:10.5px;color:var(--muted);flex:0 0 auto}
-  .sch button{background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer}
+  .sch{padding:10px 2px;border-bottom:1px solid var(--line);font-size:14px}
+  .sch .nm{font-weight:600;line-height:1.3;word-break:break-word}
+  .sch .pin{margin-right:4px}
+  .sch .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .sch button{background:var(--chip);border:none;border-radius:8px;padding:6px 10px;
+    color:var(--text);font-size:11.5px;font-weight:700;cursor:pointer}
+  .sch .del{color:var(--red)}
+  .sch .addr.has{color:var(--green)}
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#111;color:#fff;
     padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:600;z-index:99;opacity:0;
     transition:opacity .25s;pointer-events:none;max-width:90%;text-align:center}
   .toast.on{opacity:.95}
   .foot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
   .tiny{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+  .ver{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:.5px;opacity:.65;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 </style>
 </head>
 <body>
@@ -334,6 +340,7 @@
 (function(){
 "use strict";
 
+var APP_VER="2026-09-05a";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -374,6 +381,11 @@ ko:{
  "btn.copylink":"주소 복사","t.linkCopied":"주소가 복사되었습니다 · Safari에 붙여넣으세요",
  "route.title":"자주 다니는 구간","route.hint":"이전 기록 {0} km · {1}회","route.applied":"구간을 불러왔습니다",
  "btn.map":"🗺 구글 지도에서 거리 확인",
+ "gps.at":"현재 위치: {0}","gps.atNone":"근처에 등록된 장소 없음",
+ "t.autoFrom":"출발지 자동 인식 · {0}","t.autoTo":"도착지 자동 인식 · {0}",
+ "btn.here":"현재 위치로 지정","t.hereSet":"{0} 위치를 저장했습니다","t.hereFail":"현재 위치를 가져올 수 없습니다",
+ "t.hereAsk":"{0}\n\n지금 계신 위치를 이 장소의 좌표로 저장할까요?\n(그 장소에 도착한 상태에서 눌러주세요)",
+ "sch.loc":"📍",
  "map.hint":"지도에서 경로 km를 확인한 뒤 위 <b>실제 거리</b>에 적으세요. 한 구간당 한 번만 하면, 다음부터는 자동으로 채워집니다.",
  "t.mapNeed":"출발지와 도착지를 먼저 고르세요",
  "btn.addr":"주소","prompt.addr":"{0}\n\n지도 검색에 쓸 주소를 넣으세요.\n(비워두면 «이름, Delmenhorst» 로 검색합니다)",
@@ -448,6 +460,11 @@ de:{
  "btn.copylink":"Adresse kopieren","t.linkCopied":"Adresse kopiert · in Safari einfügen",
  "route.title":"Häufige Strecken","route.hint":"zuletzt {0} km · {1}×","route.applied":"Strecke übernommen",
  "btn.map":"🗺 Entfernung in Google Maps",
+ "gps.at":"Standort: {0}","gps.atNone":"Kein bekannter Ort in der Nähe",
+ "t.autoFrom":"Start erkannt · {0}","t.autoTo":"Ziel erkannt · {0}",
+ "btn.here":"Aktuellen Standort übernehmen","t.hereSet":"Standort für {0} gespeichert","t.hereFail":"Aktueller Standort nicht verfügbar",
+ "t.hereAsk":"{0}\n\nDen aktuellen Standort als Koordinaten für diesen Ort speichern?\n(bitte vor Ort antippen)",
+ "sch.loc":"📍",
  "map.hint":"Die Streckenlänge in der Karte ablesen und oben unter <b>Tatsächlich</b> eintragen. Einmal pro Strecke genügt – danach wird sie automatisch vorgeschlagen.",
  "t.mapNeed":"Bitte zuerst Start und Ziel wählen",
  "btn.addr":"Adresse","prompt.addr":"{0}\n\nAdresse für die Kartensuche eingeben.\n(leer = „Name, Delmenhorst“)",
@@ -500,40 +517,46 @@ function t(k){
 var GROUPS=["base","gs","os","gym","fs","bbs","custom"];
 var DEFAULT_SCHOOLS=[
   {k:"p.home",g:"base"},
-  {k:"p.office",g:"base"},
+  {k:"p.office",g:"base",a:"Brauenkamper Straße 97, 27755 Delmenhorst",c:[53.0449023,8.6044831]},
 
-  {n:"Astrid-Lindgren-Schule",g:"gs"},
-  {n:"Bernard-Rein-Schule",g:"gs"},
-  {n:"Grundschule Am Grünen Kamp",g:"gs"},
-  {n:"Grundschule an der Beethovenstraße",g:"gs"},
-  {n:"Grundschule Bungerhof-Hasbergen",g:"gs"},
-  {n:"Grundschule Deichhorst",g:"gs"},
-  {n:"Grundschule Iprump-Stickgras",g:"gs"},
-  {n:"Hermann-Allmers-Schule",g:"gs"},
-  {n:"Käthe-Kollwitz-Schule",g:"gs"},
-  {n:"Knister-Grundschule",g:"gs"},
-  {n:"Marienschule",g:"gs"},
-  {n:"Overbergschule",g:"gs"},
-  {n:"Parkschule",g:"gs"},
-  {n:"Wilhelm-Niermann-Schule",g:"gs"},
+  {n:"Astrid-Lindgren-Schule",g:"gs",a:"Südstraße 9, Delmenhorst",c:[53.0320439,8.6368562]},
+  {n:"Bernard-Rein-Schule",g:"gs",a:"Lilienstraße 10, Delmenhorst",c:[53.0518866,8.6457811]},
+  {n:"Grundschule Am Grünen Kamp",g:"gs",a:"Am Grünen Kamp 25, Delmenhorst",c:[53.0414837,8.6388576]},
+  {n:"Grundschule an der Beethovenstraße",g:"gs",a:"Beethovenstraße 12, Delmenhorst",c:[53.0433125,8.6065756]},
+  {n:"Grundschule Bungerhof-Hasbergen",g:"gs",a:"Stedinger Straße 279, Delmenhorst",c:[53.0747016,8.6437149]},
+  {n:"Grundschule Deichhorst",g:"gs",a:"Grundschule Deichhorst, Delmenhorst",c:[53.0516006,8.6096870]},
+  {n:"Grundschule Iprump-Stickgras",g:"gs",a:"Langenwischstraße 108, Delmenhorst",c:[53.0447779,8.6728620]},
+  {n:"Grundschule Iprump-Stickgras – Standort Iprump",g:"gs",a:"Bremer Heerstraße 6, Delmenhorst",c:[53.0561216,8.6834777]},
+  {n:"Hermann-Allmers-Schule",g:"gs",a:"Berliner Straße 54, Delmenhorst",c:[53.0423341,8.6548563]},
+  {n:"Käthe-Kollwitz-Schule",g:"gs",a:"Hasberger Straße 130, Delmenhorst",c:[53.0630536,8.6549849]},
+  {n:"Knister-Grundschule",g:"gs",a:"Adelheider Straße 159, Delmenhorst",c:[53.0233891,8.6121589]},
+  {n:"Knister-Grundschule – Standort Annenheide",g:"gs",a:"Annenweg 24, Delmenhorst",c:[53.0201132,8.6476643]},
+  {n:"Marienschule",g:"gs",a:"Beethovenstraße 8, Delmenhorst",c:[53.0438687,8.6054875]},
+  {n:"Overbergschule",g:"gs",a:"Brendelweg 59, Delmenhorst",c:[53.0294880,8.6289098]},
+  {n:"Parkschule",g:"gs",a:"Stedinger Straße 51, Delmenhorst",c:[53.0570410,8.6328511]},
+  {n:"Wilhelm-Niermann-Schule",g:"gs",a:"Geibelweg 7, Delmenhorst",c:[53.0690026,8.6345203]},
 
-  {n:"Hauptschule im Schulzentrum West",g:"os"},
-  {n:"Oberschule Süd",g:"os"},
+  {n:"Hauptschule im Schulzentrum West",g:"os",a:"Stubbenweg 3, Delmenhorst",c:[53.0477851,8.6143366]},
+  {n:"Oberschule Süd",g:"os",a:"Brendelweg 66, Delmenhorst",c:[53.0273443,8.6283857]},
   {n:"Realschule an den Graftwiesen",g:"os"},
-  {n:"Realschule Lilienstraße",g:"os"},
+  {n:"Realschule Lilienstraße",g:"os",a:"Lilienstraße 21, Delmenhorst",c:[53.0507678,8.6461805]},
   {n:"Realschule Uhlandstraße",g:"os"},
-  {n:"Wilhelm-von-der-Heyde-Oberschule",g:"os"},
-  {n:"Integrierte Gesamtschule (IGS) Delmenhorst",g:"os"},
+  {n:"Wilhelm-von-der-Heyde-Oberschule",g:"os",a:"Uhlandstraße 2, Delmenhorst",c:[53.0581080,8.6199090]},
+  {n:"Integrierte Gesamtschule (IGS) Delmenhorst",g:"os",a:"Pestalozziweg 88, Delmenhorst",c:[53.0498889,8.6497837]},
 
-  {n:"Gymnasium an der Willmsstraße",g:"gym"},
+  {n:"Gymnasium an der Willmsstraße",g:"gym",a:"Willmsstraße 3, Delmenhorst",c:[53.0510606,8.6320125]},
+  {n:"Gymnasium an der Willmsstraße – Königsberger Straße",g:"gym",a:"Königsberger Straße 65, Delmenhorst",c:[53.0370015,8.6352250]},
   {n:"Käthe-Stüve-Gymnasium",g:"gym"},
-  {n:"Max-Planck-Gymnasium",g:"gym"},
+  {n:"Max-Planck-Gymnasium",g:"gym",a:"Max-Planck-Straße 4, Delmenhorst",c:[53.0437368,8.6309742]},
+  {n:"Max-Planck-Gymnasium – Haus D",g:"gym",a:"Berliner Straße 54, Delmenhorst",c:[53.0420851,8.6556054]},
 
+  {n:"Lessingschule",g:"fs",a:"Lessingstraße 25a, Delmenhorst",c:[53.0608788,8.6258883]},
   {n:"Mosaikschule Delmenhorst",g:"fs"},
-  {n:"Schule an der Karlstraße",g:"fs"},
+  {n:"Schule an der Karlstraße",g:"fs",a:"Karlstraße 8, Delmenhorst",c:[53.0464232,8.6338146]},
+  {n:"Wichern-Schule",g:"fs",a:"Oldenburger Straße 333, Delmenhorst",c:[53.0502512,8.5813981]},
 
-  {n:"BBS I – Handelslehranstalten",g:"bbs"},
-  {n:"BBS II – Kerschensteiner Schule",g:"bbs"}
+  {n:"BBS I – Handelslehranstalten",g:"bbs",a:"Richtstraße 26, Delmenhorst",c:[53.0560098,8.6261162]},
+  {n:"BBS II – Kerschensteiner Schule",g:"bbs",a:"Wiekhorner Heuweg 56-58, Delmenhorst",c:[53.0426902,8.6146729]}
 ];
 var OLD_G={"기본":"base","Grundschule":"gs","Haupt-/Real-/Oberschule":"os","Gymnasium":"gym",
   "Förderschule":"fs","Berufsbildende Schule":"bbs","직접 추가":"custom"};
@@ -553,8 +576,21 @@ function load(){
   else lang=(navigator.language||"").toLowerCase().indexOf("ko")===0?"ko":"de";
 
   schools=lsGet(K_SCH,null);
-  if(!schools||!schools.length) schools=DEFAULT_SCHOOLS.slice();
-  else schools.forEach(function(s){ if(OLD_G[s.g]) s.g=OLD_G[s.g]; if(GROUPS.indexOf(s.g)<0) s.g="custom"; });
+  if(!schools||!schools.length){ schools=DEFAULT_SCHOOLS.slice(); lsSet(K_SCH,schools); }
+  else{
+    schools.forEach(function(s){ if(OLD_G[s.g]) s.g=OLD_G[s.g]; if(GROUPS.indexOf(s.g)<0) s.g="custom"; });
+    /* bring addresses / coordinates of the built-in places into an older stored list,
+       and add built-in places the stored list does not have yet */
+    var have={};
+    schools.forEach(function(s){ have[s.k||s.n]=s; });
+    DEFAULT_SCHOOLS.forEach(function(d){
+      var cur=have[d.k||d.n];
+      if(!cur){ schools.push(d); return; }
+      if(!cur.a&&d.a) cur.a=d.a;
+      if(!cur.c&&d.c) cur.c=d.c;
+    });
+    lsSet(K_SCH,schools);
+  }
 
   records=lsGet(K_REC,null);
   if(!records){
@@ -609,7 +645,7 @@ function applyLang(){
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-title]"),function(el){
     el.setAttribute("title",t(el.getAttribute("data-i18n-title")));
   });
-  document.getElementById("footNote").innerHTML=t("foot.note");
+  document.getElementById("footNote").innerHTML=t("foot.note")+'<br><span class="ver">v'+APP_VER+'</span>';
   document.getElementById("mapHint").innerHTML=t("map.hint");
   updateMapLink();
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
@@ -668,9 +704,12 @@ function renderSchools(){
   GROUPS.forEach(function(g){
     schools.forEach(function(s,i){
       if(s.g!==g) return;
-      html+='<div class="sch"><span class="nm">'+esc(pname(s))+'</span>'+
+      html+='<div class="sch"><div class="nm">'+(s.c?'<span class="pin">📍</span>':"")+esc(pname(s))+'</div>'+
+            '<div class="acts">'+
             '<button class="addr'+(s.a?" has":"")+'" data-a="'+i+'">'+esc(t("btn.addr"))+'</button>'+
-            '<button data-i="'+i+'">'+esc(lang==="de"?"Entfernen":"삭제")+'</button></div>';
+            '<button class="here" data-h="'+i+'">'+esc(t("btn.here"))+'</button>'+
+            '<button class="del" data-i="'+i+'">'+esc(lang==="de"?"Entfernen":"삭제")+'</button>'+
+            '</div></div>';
     });
   });
   box.innerHTML=html||'<div class="empty">'+esc(t("empty.places"))+'</div>';
@@ -680,6 +719,18 @@ function renderSchools(){
   Array.prototype.forEach.call(box.querySelectorAll("[data-a]"),function(b){
     b.onclick=function(){ editAddr(Number(b.getAttribute("data-a"))); };
   });
+  Array.prototype.forEach.call(box.querySelectorAll("[data-h]"),function(b){
+    b.onclick=function(){ setHere(Number(b.getAttribute("data-h"))); };
+  });
+}
+function setHere(i){
+  var s0=schools[i]; if(!s0) return;
+  if(!navigator.geolocation){ toast(t("t.hereFail")); return; }
+  if(!confirm(t("t.hereAsk",pname(s0)))) return;
+  navigator.geolocation.getCurrentPosition(function(p){
+    s0.c=[p.coords.latitude,p.coords.longitude];
+    lsSet(K_SCH,schools); renderSchools(); toast(t("t.hereSet",pname(s0)));
+  },function(){ toast(t("t.hereFail")); },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
 }
 function editAddr(i){
   var s0=schools[i]; if(!s0) return;
@@ -713,18 +764,35 @@ window.setMode=function(m){
 };
 
 /* ================= GPS ================= */
-var gps={active:false,id:null,dist:0,last:null,t0:0,wake:null,tick:null,acc:null};
+var gps={active:false,id:null,dist:0,last:null,t0:0,wake:null,tick:null,acc:null,autoFrom:false,here:null,hereName:""};
 function hav(a,b,c,d){
   var R=6371,r=Math.PI/180;
   var dLa=(c-a)*r,dLo=(d-b)*r;
   var x=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)*Math.sin(dLo/2);
   return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
+/* ---- which known place is the phone standing at? ---- */
+function nearestPlace(la,lo,maxKm){
+  var best=null,bd=maxKm||0.35;
+  schools.forEach(function(s0){
+    if(!s0.c) return;
+    var d=hav(la,lo,s0.c[0],s0.c[1]);
+    if(d<bd){ bd=d; best=s0; }
+  });
+  return best?{s:best,km:bd}:null;
+}
+function setPlace(which,name){
+  ensureOption(which==="from"?"fromSel":"toSel",
+               which==="from"?"fromOther":"toOther",
+               which==="from"?"fromOtherWrap":"toOtherWrap",name);
+  onSelChange();
+}
 window.gpsStart=function(){
   if(!navigator.geolocation){ toast(t("t.noGeo")); showHelp(false); return; }
   if(ENV.file||ENV.insecure){ toast(t("t.noGeo")); showHelp(false); return; }
   hideHelp();
   gps.active=true; gps.dist=0; gps.last=null; gps.t0=Date.now(); gps.acc=null;
+  gps.autoFrom=false; gps.here=null; gps.hereName="";
   var a=document.getElementById("btnStart"), b=document.getElementById("btnStop");
   a.disabled=true; a.style.opacity=".4"; b.disabled=false; b.style.opacity="1";
   document.getElementById("gpsBox").classList.add("rec");
@@ -746,6 +814,13 @@ function onPos(p){
   gps.acc=ac;
   if(permState!=="granted"){ permState="granted"; renderPermUI(); }
   if(ac>60){ setMeta(); return; }
+  gps.here={la:la,lo:lo};
+  if(!gps.autoFrom){
+    gps.autoFrom=true;
+    var np=nearestPlace(la,lo);
+    if(np){ gps.hereName=pname(np.s); setPlace("from",gps.hereName); toast(t("t.autoFrom",gps.hereName)); }
+    else{ gps.hereName=""; }
+  }
   if(gps.last){
     var d=hav(gps.last.la,gps.last.lo,la,lo);
     if(d>=0.008&&d<3){ gps.dist+=d; gps.last={la:la,lo:lo}; }
@@ -906,7 +981,8 @@ function setMeta(){
   var s=Math.floor((Date.now()-gps.t0)/1000);
   var clock=Math.floor(s/60)+":"+pad(s%60);
   var a=gps.acc==null?"–":Math.round(gps.acc)+" m";
-  document.getElementById("gpsMeta").innerHTML='<span class="dot"></span>'+esc(t("gps.rec",clock,a));
+  var extra=gps.hereName?"  ·  "+t("gps.at",gps.hereName):"";
+  document.getElementById("gpsMeta").innerHTML='<span class="dot"></span>'+esc(t("gps.rec",clock,a)+extra);
 }
 window.gpsStop=function(){
   if(!gps.active) return;
@@ -917,6 +993,13 @@ window.gpsStop=function(){
   var a=document.getElementById("btnStart"), b=document.getElementById("btnStop");
   a.disabled=false; a.style.opacity="1"; b.disabled=true; b.style.opacity=".4";
   document.getElementById("gpsBox").classList.remove("rec");
+  if(gps.here){
+    var np=nearestPlace(gps.here.la,gps.here.lo);
+    if(np){
+      var n=pname(np.s);
+      if(n!==val("fromSel","fromOther")){ setPlace("to",n); toast(t("t.autoTo",n)); }
+    }
+  }
   var km=Math.round(gps.dist*10)/10;
   document.getElementById("gpsMeta").textContent=km>0?t("gps.done",num(km.toFixed(1))):t("gps.none");
   if(km>0){ kmAuto=false; document.getElementById("rawKm").value=km.toFixed(1); previewRound(); }
