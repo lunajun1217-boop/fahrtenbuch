@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a68ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fahrtenbuch">
+<meta name="mobile-web-app-capable" content="yes">
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Fahrtenbuch Delmenhorst</title>
+<style>
+  :root{
+    --bg:#f2f2f7; --card:#ffffff; --text:#1c1c1e; --muted:#8a8a8e;
+    --line:#e5e5ea; --field:#f7f7f9; --blue:#0a68ff; --green:#1eaa50;
+    --red:#e0322b; --purple:#5b4bd6; --chip:#eef2f9;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#000000; --card:#1c1c1e; --text:#f2f2f7; --muted:#98989f;
+      --line:#2c2c2e; --field:#2c2c2e; --blue:#4c9aff; --green:#32d074;
+      --red:#ff6961; --purple:#7d6cf0; --chip:#2c2c2e;
+      --shadow:0 1px 3px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#000000; --card:#1c1c1e; --text:#f2f2f7; --muted:#98989f;
+    --line:#2c2c2e; --field:#2c2c2e; --blue:#4c9aff; --green:#32d074;
+    --red:#ff6961; --purple:#7d6cf0; --chip:#2c2c2e;
+    --shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0 auto;padding:14px 14px 60px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+    font-size:15px;line-height:1.45;max-width:680px;
+  }
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 12px}
+  .htitle{flex:1;min-width:0}
+  h1{font-size:19px;font-weight:700;margin:0;letter-spacing:-.3px;white-space:nowrap}
+  .sub{font-size:12px;color:var(--muted);margin:1px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:380px){ h1{font-size:17px} .sub{font-size:11px} }
+  .hbtns{display:flex;gap:6px;flex:0 0 auto}
+  .icon-btn{background:var(--card);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .lang{display:flex;background:var(--chip);border-radius:10px;padding:2px;flex:0 0 auto}
+  .lang button{border:none;background:transparent;color:var(--muted);font-weight:700;font-size:12px;
+    padding:6px 10px;border-radius:8px;cursor:pointer;letter-spacing:.3px}
+  .lang button.on{background:var(--card);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
+  .stat{background:var(--card);border-radius:14px;padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+  .stat .t{font-size:11px;color:var(--muted);font-weight:600}
+  .stat .v{font-size:21px;font-weight:800;margin-top:3px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .stat .u{font-size:11px;font-weight:600;color:var(--muted);margin-left:1px}
+  .c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-purple{color:var(--purple)}
+  .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+  label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:0 0 5px}
+  select,input,textarea{width:100%;padding:11px 12px;font-size:15px;color:var(--text);
+    background:var(--field);border:1px solid var(--line);border-radius:11px;font-family:inherit}
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+  input[type=number]{-moz-appearance:textfield}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .row{display:flex;gap:9px;align-items:flex-end}
+  .row>div{flex:1;min-width:0}
+  .mb{margin-bottom:11px}
+  .swap{flex:0 0 auto;background:var(--chip);border:none;color:var(--blue);font-size:17px;
+    border-radius:11px;width:44px;height:43px;cursor:pointer;font-weight:700}
+  button.b{border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;width:100%}
+  button.b:active{opacity:.75}
+  .b-blue{background:var(--blue)} .b-green{background:var(--green)}
+  .b-red{background:var(--red)} .b-purple{background:var(--purple)}
+  button.b-ghost{background:var(--chip);color:var(--text)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  #routeBox{margin:2px 0 13px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;background:var(--chip);
+    border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:12.5px;
+    font-weight:600;color:var(--text);cursor:pointer;line-height:1.2}
+  .chip .r{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip .km{flex:0 0 auto;color:var(--blue);font-weight:800}
+  .chip:active{opacity:.7}
+  .kmhint{font-size:11px;color:var(--blue);font-weight:600;margin:-7px 2px 0;padding-bottom:2px}
+  .maplink{margin-bottom:2px;font-size:14px;padding:11px}
+  .maplink.off{opacity:.45;pointer-events:none}
+  .sch .addr{background:none;border:none;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer}
+  .sch .has{color:var(--green)}
+  .seg{display:flex;background:var(--chip);border-radius:11px;padding:3px;margin-bottom:13px}
+  .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-weight:700;
+    font-size:13px;padding:8px;border-radius:9px;cursor:pointer}
+  .seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .gps-box{background:var(--field);border-radius:12px;padding:14px;text-align:center;margin-bottom:11px}
+  .gps-live{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .gps-meta{font-size:11.5px;color:var(--muted);margin-top:4px;min-height:16px}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:1px}
+  .rec .dot{animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  @media (prefers-reduced-motion: reduce){ .rec .dot{animation:none} }
+  .note{font-size:11.5px;color:var(--muted);margin:8px 2px 0;line-height:1.5}
+  .perm{border:1px solid var(--blue);border-radius:12px;padding:12px 13px;margin-bottom:11px;
+    background:color-mix(in srgb,var(--blue) 8%,transparent)}
+  .perm .perm-txt b{display:block;font-size:13px;font-weight:700;color:var(--blue);margin-bottom:3px}
+  .perm .perm-txt span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+  .perm .perm-btn{margin-top:10px;padding:11px;font-size:14px}
+  .perm.ok{border-color:var(--green);background:color-mix(in srgb,var(--green) 9%,transparent)}
+  .perm.ok .perm-txt b{color:var(--green);margin-bottom:0}
+  .help{margin-top:11px;border:1px solid var(--red);border-radius:12px;padding:12px 13px;
+    background:color-mix(in srgb,var(--red) 8%,transparent)}
+  .help-t{font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px}
+  .help ul{margin:0;padding-left:17px;font-size:12.5px;line-height:1.65}
+  .help li+li{margin-top:5px}
+  .help b{font-weight:700}
+  .help-btns{margin-top:11px}
+  .help-btns.solo{grid-template-columns:1fr}
+  button.b-outline,a.b-outline{background:var(--card);color:var(--text);border:1px solid var(--line)}
+  a.b{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
+  .urlbox{margin-top:9px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+  .urlbox code{font-size:10px;line-height:1.5;color:var(--muted);word-break:break-all;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;user-select:all;-webkit-user-select:all}
+  .help .b{padding:11px;font-size:14px}
+  .diag{margin-top:11px;border-top:1px solid var(--line);padding-top:9px}
+  .diag-t{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.4px;
+    text-transform:uppercase;cursor:pointer;list-style:none}
+  .diag-t::-webkit-details-marker{display:none}
+  .diag-t::before{content:"▸ ";font-size:9px}
+  details[open] .diag-t::before{content:"▾ "}
+  .diag code{display:block;font-size:10.5px;line-height:1.6;color:var(--muted);margin-top:4px;
+    white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .diag-copy{margin-top:7px;background:var(--chip);color:var(--text);border:none;border-radius:9px;
+    padding:7px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+  .list-head{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;gap:8px}
+  .list-head h2{font-size:15px;margin:0;font-weight:700}
+  .list-head select{width:auto;padding:7px 30px 7px 10px;font-size:13px;font-weight:600;background-color:var(--card)}
+  .trip{background:var(--card);border-radius:14px;padding:11px 13px;margin-bottom:8px;
+    display:flex;align-items:center;gap:11px;box-shadow:var(--shadow)}
+  .trip .d{flex:0 0 44px;text-align:center}
+  .trip .d .dd{font-size:16px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .trip .d .mm{font-size:10px;color:var(--muted);font-weight:600}
+  .trip .r{flex:1;min-width:0;cursor:pointer}
+  .trip .r .p{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trip .r .p .arr{color:var(--muted);margin:0 4px}
+  .trip .r .z{font-size:11.5px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trip .k{flex:0 0 auto;text-align:right;cursor:pointer}
+  .trip .k .big{font-size:16px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+  .trip .k .raw{font-size:10.5px;color:var(--muted)}
+  .trip .x{flex:0 0 auto;background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;padding:2px 2px 2px 4px}
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
+  .month-total{display:flex;justify-content:space-between;align-items:center;background:var(--chip);
+    border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:700;margin-bottom:10px;gap:10px}
+  .month-total b{font-size:17px;color:var(--blue);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;
+    justify-content:center;z-index:50}
+  .sheet.open{display:flex}
+  .sheet-in{background:var(--card);width:100%;max-width:680px;border-radius:20px 20px 0 0;
+    padding:16px 14px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+  .sheet-in h3{margin:0 0 12px;font-size:16px}
+  .sch{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}
+  .sch span.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sch .g{font-size:10.5px;color:var(--muted);flex:0 0 auto}
+  .sch button{background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#111;color:#fff;
+    padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:600;z-index:99;opacity:0;
+    transition:opacity .25s;pointer-events:none;max-width:90%;text-align:center}
+  .toast.on{opacity:.95}
+  .foot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .tiny{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="htitle">
+    <h1>Fahrtenbuch</h1>
+    <p class="sub" data-i18n="app.sub"></p>
+  </div>
+  <div class="hbtns">
+    <div class="lang">
+      <button id="langKo" onclick="setLang('ko')">KO</button>
+      <button id="langDe" onclick="setLang('de')">DE</button>
+    </div>
+    <button class="icon-btn" data-i18n="nav.schools" onclick="openSchools()"></button>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="t" data-i18n="stat.week"></div><div class="v c-green"><span id="stWeek">0</span><span class="u">km</span></div></div>
+  <div class="stat"><div class="t" data-i18n="stat.month"></div><div class="v c-blue"><span id="stMonth">0</span><span class="u">km</span></div></div>
+  <div class="stat"><div class="t" data-i18n="stat.count"></div><div class="v c-purple"><span id="stCount">0</span><span class="u" data-i18n="unit.trips"></span></div></div>
+</div>
+
+<div class="card">
+  <div class="seg">
+    <button id="tabGps" class="on" data-i18n="tab.gps" onclick="setMode('gps')"></button>
+    <button id="tabMan" data-i18n="tab.man" onclick="setMode('man')"></button>
+  </div>
+
+  <div class="help" id="gpsHelp" hidden>
+    <div class="help-t" data-i18n="help.title"></div>
+    <ul id="helpSteps"></ul>
+    <div class="grid2 help-btns" id="helpBtns">
+    <button class="b b-blue" id="btnCopyLink" data-i18n="btn.copylink" onclick="copyLink()" hidden></button>
+    <button class="b b-blue" id="btnRetry" data-i18n="btn.retry" onclick="requestPerm()"></button>
+    <a class="b b-outline" id="btnNewTab" data-i18n="btn.newtab" target="_blank" rel="noopener"></a>
+    </div>
+    <div class="urlbox" id="urlBox" hidden>
+      <code id="urlText"></code>
+    </div>
+    <details class="diag">
+      <summary class="diag-t" data-i18n="help.diag"></summary>
+      <code id="diagText"></code>
+      <button class="diag-copy" data-i18n="btn.copy" onclick="copyDiag()"></button>
+    </details>
+  </div>
+
+
+  <div class="row mb">
+    <div>
+      <label data-i18n="f.from"></label>
+      <select id="fromSel"></select>
+    </div>
+    <button class="swap" data-i18n-title="f.swap" onclick="swapSchools()">⇅</button>
+    <div>
+      <label data-i18n="f.to"></label>
+      <select id="toSel"></select>
+    </div>
+  </div>
+
+  <div id="fromOtherWrap" class="mb" hidden>
+    <label data-i18n="f.fromOther"></label>
+    <input id="fromOther" data-i18n-ph="ph.place" oninput="applyRouteHint()">
+  </div>
+  <div id="toOtherWrap" class="mb" hidden>
+    <label data-i18n="f.toOther"></label>
+    <input id="toOther" data-i18n-ph="ph.place" oninput="applyRouteHint()">
+  </div>
+
+  <div id="gpsPane">
+    <div class="perm" id="permBox" hidden>
+      <div class="perm-txt">
+        <b data-i18n="perm.title"></b>
+        <span data-i18n="perm.desc"></span>
+      </div>
+      <button class="b b-blue perm-btn" id="permBtn" data-i18n="btn.allow" onclick="requestPerm()"></button>
+    </div>
+    <div class="perm ok" id="permOk" hidden>
+      <div class="perm-txt"><b data-i18n="perm.ok"></b></div>
+    </div>
+    <div class="gps-box" id="gpsBox">
+      <div class="gps-live"><span id="gpsKm">0.0</span><span class="u" style="font-size:15px"> km</span></div>
+      <div class="gps-meta" id="gpsMeta"></div>
+    </div>
+    <div class="grid2">
+      <button class="b b-green" id="btnStart" data-i18n="btn.start" onclick="gpsStart()"></button>
+      <button class="b b-red" id="btnStop" data-i18n="btn.stop" onclick="gpsStop()" disabled style="opacity:.4"></button>
+    </div>
+    <p class="note" data-i18n="gps.note"></p>
+  </div>
+
+  <div id="routeBox" hidden>
+    <label data-i18n="route.title"></label>
+    <div class="chips" id="routeChips"></div>
+  </div>
+
+  <div class="row mb" style="margin-top:12px">
+    <div>
+      <label data-i18n="f.rawKm"></label>
+      <input type="number" id="rawKm" step="0.1" min="0" inputmode="decimal" data-i18n-ph="ph.rawKm" oninput="onKmInput()">
+      <div class="kmhint" id="kmHint" hidden></div>
+    </div>
+    <div>
+      <label data-i18n="f.payKm"></label>
+      <input type="number" id="payKm" step="1" min="0" inputmode="numeric" placeholder="0">
+    </div>
+  </div>
+
+  <a class="b b-outline maplink" id="mapLink" data-i18n="btn.map" target="_blank" rel="noopener"></a>
+  <p class="note" id="mapHint"></p>
+
+  <div class="row mb" style="margin-top:12px">
+    <div>
+      <label data-i18n="f.date"></label>
+      <input type="date" id="dateIn">
+    </div>
+    <div>
+      <label data-i18n="f.purpose"></label>
+      <input id="purpose" data-i18n-ph="ph.purpose">
+    </div>
+  </div>
+
+  <button class="b b-blue" id="saveBtn" data-i18n="btn.save" onclick="saveTrip()"></button>
+  <div class="grid2" style="margin-top:9px">
+    <button class="b b-ghost" data-i18n="btn.saveReturn" onclick="saveTrip(true)"></button>
+    <button class="b b-ghost" data-i18n="btn.reset" onclick="resetForm()"></button>
+  </div>
+</div>
+
+<div class="list-head">
+  <h2 data-i18n="list.title"></h2>
+  <select id="monthSel" onchange="render()"></select>
+</div>
+<div class="month-total"><span id="mtLabel"></span><b><span id="mtValue">0</span> km</b></div>
+<div id="tripList"></div>
+
+<div class="foot">
+  <button class="b b-purple" data-i18n="btn.csv" onclick="exportCSV()"></button>
+  <button class="b b-ghost" data-i18n="btn.backup" onclick="backup()"></button>
+</div>
+<div class="foot" style="margin-top:9px">
+  <button class="b b-ghost" data-i18n="btn.restore" onclick="document.getElementById('restoreFile').click()"></button>
+  <button class="b b-ghost" data-i18n="btn.wipe" onclick="wipe()"></button>
+</div>
+<input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="restore(event)">
+
+<p class="tiny" id="footNote"></p>
+
+<div class="sheet" id="schoolSheet" onclick="if(event.target===this)closeSchools()">
+  <div class="sheet-in">
+    <h3 data-i18n="sheet.title"></h3>
+    <div class="row mb">
+      <div><input id="newSchool" data-i18n-ph="ph.newSchool"></div>
+      <button class="swap" style="width:52px" onclick="addSchool()">＋</button>
+    </div>
+    <div id="schoolList"></div>
+    <button class="b b-ghost" style="margin-top:14px" data-i18n="btn.close" onclick="closeSchools()"></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
+var OTHER="__other__";
+
+/* ================= i18n ================= */
+var STR={
+ko:{
+ "app.sub":"Delmenhorst 학교 순회 기록",
+ "nav.schools":"학교 관리",
+ "stat.week":"이번 주","stat.month":"이번 달","stat.count":"이번 달 건수","unit.trips":"회",
+ "tab.gps":"GPS 자동측정","tab.man":"직접 입력",
+ "f.from":"출발","f.to":"도착","f.swap":"출발/도착 바꾸기",
+ "f.fromOther":"출발 직접 입력","f.toOther":"도착 직접 입력","ph.place":"장소 이름",
+ "f.rawKm":"실제 거리 (km)","f.payKm":"정산 거리 (반올림)","ph.rawKm":"예: 3.4",
+ "f.date":"날짜","f.purpose":"목적 / 메모","ph.purpose":"예: Schulbesuch",
+ "btn.start":"▶ 출발","btn.stop":"■ 도착",
+ "btn.save":"기록 저장","btn.saveReturn":"저장 + 왕복 추가","btn.reset":"입력 초기화",
+ "btn.csv":"CSV 다운로드","btn.backup":"데이터 백업(JSON)","btn.restore":"백업 불러오기",
+ "btn.wipe":"전체 삭제","btn.close":"닫기",
+ "list.title":"운행 기록","opt.other":"＋ 직접 입력…","opt.all":"전체 기간",
+ "total.sel":"선택 월 정산 합계 ({0}건)","total.all":"전체 정산 합계 ({0}건)",
+ "sheet.title":"학교 · 장소 관리","ph.newSchool":"추가할 학교/장소 이름",
+ "gps.note":"GPS는 실제 주행 경로를 따라 누적 측정합니다. 화면을 끄거나 다른 앱으로 전환하면 측정이 멈출 수 있으니, 주행 중에는 이 화면을 켜 둔 채로 두세요. 측정값은 저장 전에 수정할 수 있습니다.",
+ "gps.idle":"출발 버튼을 누르면 측정을 시작합니다",
+ "gps.searching":"GPS 신호를 찾는 중…",
+ "gps.denied":"위치 권한이 거부되었습니다 · 설정에서 허용해 주세요",
+ "gps.err":"GPS 신호를 받을 수 없습니다",
+ "gps.rec":"측정 중 · {0} · 정확도 {1}",
+ "gps.done":"측정 완료: {0} km · 필요하면 아래에서 수정하세요",
+ "gps.none":"측정된 거리가 없습니다",
+ "gps.slow":"아직 GPS 신호를 못 찾았습니다 · 실외에서 잠시 기다려 주세요",
+ "help.title":"위치 권한이 필요합니다",
+ "perm.title":"위치 권한이 아직 허용되지 않았습니다",
+ "help.inapp2":"지금 <b>앱 안의 브라우저</b>에서 열려 있습니다. iOS는 이 상태에서 위치 사용을 허용하지 않습니다.",
+ "help.blocked":"이 페이지는 다른 페이지 안에 <b>삽입된 상태</b>라 iOS가 위치 접근을 거부합니다. 설정으로는 풀 수 없습니다.",
+ "help.copylink":"<b>새 탭에서 열기</b>를 누르면 Safari 새 탭에서 단독으로 열리고, 거기서는 위치 허용 창이 정상적으로 뜹니다. 기록은 같은 저장소에 쌓이므로 이 화면에서도 그대로 보입니다. (버튼이 안 먹으면 아래 주소를 길게 눌러 <b>복사</b> → Safari 주소창에 붙여넣기.)",
+ "help.expiry":"주의: 이 주소는 <b>약 1시간 뒤 만료</b>됩니다. 홈 화면에 추가해도 나중에 안 열리니, 운행할 때마다 이 화면에서 새로 여세요.",
+ "help.usemanual":"GPS 없이도 아래 <b>직접 입력</b>과 <b>자주 다니는 구간</b>으로 두 번만 눌러 기록할 수 있습니다.",
+ "btn.copylink":"주소 복사","t.linkCopied":"주소가 복사되었습니다 · Safari에 붙여넣으세요",
+ "route.title":"자주 다니는 구간","route.hint":"이전 기록 {0} km · {1}회","route.applied":"구간을 불러왔습니다",
+ "btn.map":"🗺 구글 지도에서 거리 확인",
+ "map.hint":"지도에서 경로 km를 확인한 뒤 위 <b>실제 거리</b>에 적으세요. 한 구간당 한 번만 하면, 다음부터는 자동으로 채워집니다.",
+ "t.mapNeed":"출발지와 도착지를 먼저 고르세요",
+ "btn.addr":"주소","prompt.addr":"{0}\n\n지도 검색에 쓸 주소를 넣으세요.\n(비워두면 «이름, Delmenhorst» 로 검색합니다)",
+ "perm.desc":"GPS 자동측정을 쓰려면 먼저 권한을 허용해 주세요. 아래 버튼을 누르면 확인 창이 뜹니다.",
+ "perm.ok":"위치 권한이 허용되었습니다 · GPS 측정을 쓸 수 있습니다",
+ "btn.allow":"위치 권한 허용하기","btn.allowing":"확인 중…",
+ "t.permOk":"위치 권한이 허용되었습니다",
+ "btn.retry":"권한 다시 요청","btn.newtab":"새 탭에서 열기",
+ "help.file":"이 파일이 <b>file://</b> 주소로 열려 있습니다. 브라우저는 이 방식에서는 위치 사용을 아예 허용하지 않습니다. 대화창의 <b>앱 링크</b>로 열어 주세요.",
+ "help.iframe":"앱이 다른 페이지 안에 삽입된 상태입니다. 아래 <b>새 탭에서 열기</b>를 눌러 앱을 직접 열면 권한을 허용할 수 있습니다.",
+ "help.ios":"iPhone·iPad: 주소창 왼쪽 <b>ᴀA</b> → <b>웹사이트 설정</b> → <b>위치</b> → <b>허용</b>. 그래도 안 되면 <b>설정</b> 앱 → 개인 정보 보호 및 보안 → <b>위치 서비스</b> → Safari 웹사이트 → <b>앱을 사용하는 동안</b>",
+ "help.android":"Android Chrome: 주소창 왼쪽 <b>자물쇠</b> 아이콘 → <b>권한</b> → <b>위치</b> → <b>허용</b> 후 새로고침",
+ "help.desktop":"주소창 왼쪽 <b>자물쇠</b> 아이콘 → <b>위치</b> → <b>허용</b>으로 바꾼 뒤 새로고침하세요",
+ "help.inapp":"카카오톡·인스타그램 등 앱 안의 브라우저에서는 위치가 막힐 수 있습니다. <b>Safari</b> 또는 <b>Chrome</b>에서 열어 주세요.",
+ "help.reload":"권한을 바꾼 뒤에는 페이지를 <b>새로고침</b>해야 적용됩니다.",
+ "help.diag":"진단 정보 (개발자에게 보여주세요)","btn.copy":"진단 정보 복사","t.copied":"복사되었습니다",
+ "foot.note":"모든 기록은 이 기기(브라우저) 안에만 저장됩니다.<br>Safari/Chrome에서 <b>홈 화면에 추가</b>하면 앱처럼 사용할 수 있습니다.<br>가끔 <b>백업(JSON)</b>을 받아두면 기기 변경 시 안전합니다.",
+ "row.raw":"실제 {0}","row.none":"—","empty":"기록이 없습니다","empty.places":"등록된 장소가 없습니다",
+ "t.saved":"저장되었습니다 · {0} km","t.savedRt":"왕복 2건이 저장되었습니다 · 총 {0} km",
+ "t.updated":"수정되었습니다","t.deleted":"삭제되었습니다","t.added":"추가되었습니다",
+ "t.needPlaces":"출발지와 도착지를 입력하세요","t.samePlace":"출발지와 도착지가 같습니다",
+ "t.needKm":"이동 거리를 입력하세요","t.badPay":"정산 거리를 확인하세요",
+ "t.needName":"이름을 입력하세요","t.dupName":"이미 있는 장소입니다",
+ "t.editMode":"수정 모드 · 저장을 누르면 반영됩니다","t.noExport":"내보낼 기록이 없습니다",
+ "t.csvDone":"CSV {0}건을 내려받았습니다","t.backupDone":"백업 파일을 내려받았습니다",
+ "t.restored":"복원되었습니다","t.badFile":"파일을 읽을 수 없습니다","t.wiped":"모두 삭제되었습니다",
+ "t.noGeo":"이 브라우저는 GPS를 지원하지 않습니다","t.busy":"측정 중에는 전환할 수 없습니다",
+ "t.saveFail":"파일을 저장할 수 없습니다","t.noStorage":"저장 공간에 쓸 수 없습니다",
+ "t.imported":"이전 기록 {0}건을 불러왔습니다",
+ "c.delSchool":"\"{0}\" 을(를) 목록에서 삭제할까요?\n(이미 저장된 기록은 그대로 남습니다)",
+ "c.delTrip":"{0}\n{1} → {2}\n이 기록을 삭제할까요?",
+ "c.restore":"백업 {0}건을 불러옵니다.\n현재 기록에 합칠까요?  (취소 = 덮어쓰기)",
+ "c.wipe1":"모든 운행 기록을 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?","c.wipe2":"정말 삭제할까요?",
+ "g.base":"기본","g.gs":"Grundschule (초등)","g.os":"Haupt-/Real-/Oberschule (중등)",
+ "g.gym":"Gymnasium (김나지움)","g.fs":"Förderschule (특수)","g.bbs":"Berufsbildende Schule (직업)",
+ "g.custom":"직접 추가",
+ "p.home":"Zuhause","p.office":"Büro",
+ "date.month":"{0}월","date.pick":"{0}년 {1}월"
+},
+de:{
+ "app.sub":"Delmenhorst · Schulfahrten",
+ "nav.schools":"Orte",
+ "stat.week":"Diese Woche","stat.month":"Dieser Monat","stat.count":"Fahrten im Monat","unit.trips":"×",
+ "tab.gps":"GPS-Messung","tab.man":"Manuell",
+ "f.from":"Start","f.to":"Ziel","f.swap":"Start und Ziel tauschen",
+ "f.fromOther":"Start manuell eingeben","f.toOther":"Ziel manuell eingeben","ph.place":"Name des Ortes",
+ "f.rawKm":"Tatsächlich (km)","f.payKm":"Abrechnung (gerundet)","ph.rawKm":"z. B. 3.4",
+ "f.date":"Datum","f.purpose":"Zweck / Notiz","ph.purpose":"z. B. Schulbesuch",
+ "btn.start":"▶ Start","btn.stop":"■ Ziel",
+ "btn.save":"Fahrt speichern","btn.saveReturn":"Speichern + Rückfahrt","btn.reset":"Zurücksetzen",
+ "btn.csv":"CSV exportieren","btn.backup":"Backup (JSON)","btn.restore":"Backup laden",
+ "btn.wipe":"Alles löschen","btn.close":"Schließen",
+ "list.title":"Fahrten","opt.other":"＋ Manuell eingeben…","opt.all":"Gesamter Zeitraum",
+ "total.sel":"Abrechnung Monat ({0} Fahrten)","total.all":"Abrechnung gesamt ({0} Fahrten)",
+ "sheet.title":"Schulen & Orte verwalten","ph.newSchool":"Name der Schule / des Ortes",
+ "gps.note":"Das GPS misst die tatsächlich gefahrene Strecke entlang der Route. Bei ausgeschaltetem Display oder einem Wechsel in eine andere App kann die Messung stoppen – lassen Sie diese Seite während der Fahrt geöffnet. Der gemessene Wert lässt sich vor dem Speichern korrigieren.",
+ "gps.idle":"Auf „Start“ tippen, um die Messung zu beginnen",
+ "gps.searching":"GPS-Signal wird gesucht…",
+ "gps.denied":"Standortzugriff verweigert · bitte in den Einstellungen erlauben",
+ "gps.err":"Kein GPS-Signal verfügbar",
+ "gps.rec":"Messung läuft · {0} · Genauigkeit {1}",
+ "gps.done":"Fertig: {0} km · unten bei Bedarf anpassen",
+ "gps.none":"Keine Strecke gemessen",
+ "gps.slow":"Noch kein GPS-Signal · bitte im Freien kurz warten",
+ "help.title":"Standortfreigabe erforderlich",
+ "perm.title":"Standortfreigabe steht noch aus",
+ "help.inapp2":"Die Seite läuft im <b>Browser innerhalb einer App</b>. iOS erlaubt dort keinen Standortzugriff.",
+ "help.blocked":"Die Seite ist in eine andere Seite <b>eingebettet</b>; iOS verweigert dann den Standortzugriff. Über die Einstellungen ist das nicht lösbar.",
+ "help.copylink":"Mit <b>In neuem Tab öffnen</b> läuft die Seite eigenständig in Safari und fragt dort ganz normal nach dem Standort. Die Fahrten landen im selben Speicher und sind auch hier sichtbar. (Falls der Button nichts tut: Adresse unten lange antippen, <b>kopieren</b> und in Safari einfügen.)",
+ "help.expiry":"Achtung: Diese Adresse läuft <b>nach etwa einer Stunde ab</b>. Ein Lesezeichen auf dem Home-Bildschirm funktioniert später nicht mehr – vor jeder Fahrt hier neu öffnen.",
+ "help.usemanual":"Auch ohne GPS genügen zwei Tipps: <b>Manuell</b> eingeben oder eine <b>häufige Strecke</b> wählen.",
+ "btn.copylink":"Adresse kopieren","t.linkCopied":"Adresse kopiert · in Safari einfügen",
+ "route.title":"Häufige Strecken","route.hint":"zuletzt {0} km · {1}×","route.applied":"Strecke übernommen",
+ "btn.map":"🗺 Entfernung in Google Maps",
+ "map.hint":"Die Streckenlänge in der Karte ablesen und oben unter <b>Tatsächlich</b> eintragen. Einmal pro Strecke genügt – danach wird sie automatisch vorgeschlagen.",
+ "t.mapNeed":"Bitte zuerst Start und Ziel wählen",
+ "btn.addr":"Adresse","prompt.addr":"{0}\n\nAdresse für die Kartensuche eingeben.\n(leer = „Name, Delmenhorst“)",
+ "perm.desc":"Für die GPS-Messung bitte zuerst den Standort freigeben. Der Browser fragt dann nach.",
+ "perm.ok":"Standort freigegeben · GPS-Messung ist einsatzbereit",
+ "btn.allow":"Standort freigeben","btn.allowing":"Wird geprüft…",
+ "t.permOk":"Standort freigegeben",
+ "btn.retry":"Erneut anfragen","btn.newtab":"In neuem Tab öffnen",
+ "help.file":"Diese Datei ist über <b>file://</b> geöffnet. Browser erlauben in diesem Fall grundsätzlich keinen Standortzugriff. Bitte über den <b>App-Link</b> aus dem Chat öffnen.",
+ "help.iframe":"Die App läuft eingebettet in einer anderen Seite. Mit <b>In neuem Tab öffnen</b> direkt aufrufen – dann lässt sich die Freigabe erteilen.",
+ "help.ios":"iPhone·iPad: links in der Adressleiste <b>ᴀA</b> → <b>Einstellungen für Website</b> → <b>Standort</b> → <b>Erlauben</b>. Falls weiterhin blockiert: <b>Einstellungen</b> → Datenschutz &amp; Sicherheit → <b>Ortungsdienste</b> → Safari-Websites → <b>Beim Verwenden der App</b>",
+ "help.android":"Android Chrome: <b>Schloss-Symbol</b> in der Adressleiste → <b>Berechtigungen</b> → <b>Standort</b> → <b>Zulassen</b>, dann neu laden",
+ "help.desktop":"<b>Schloss-Symbol</b> links in der Adressleiste → <b>Standort</b> → auf <b>Zulassen</b> stellen und die Seite neu laden",
+ "help.inapp":"In App-internen Browsern (z. B. Instagram, KakaoTalk) ist der Standort oft gesperrt. Bitte in <b>Safari</b> oder <b>Chrome</b> öffnen.",
+ "help.reload":"Nach dem Ändern der Freigabe die Seite <b>neu laden</b>.",
+ "help.diag":"Diagnose (zum Weitergeben)","btn.copy":"Diagnose kopieren","t.copied":"Kopiert",
+ "foot.note":"Alle Daten bleiben ausschließlich auf diesem Gerät.<br>In Safari/Chrome über <b>Zum Home-Bildschirm</b> wie eine App nutzbar.<br>Ein gelegentliches <b>Backup (JSON)</b> schützt bei einem Gerätewechsel.",
+ "row.raw":"tats. {0}","row.none":"—","empty":"Noch keine Fahrten","empty.places":"Keine Orte vorhanden",
+ "t.saved":"Gespeichert · {0} km","t.savedRt":"Hin- und Rückfahrt gespeichert · {0} km",
+ "t.updated":"Änderung gespeichert","t.deleted":"Gelöscht","t.added":"Hinzugefügt",
+ "t.needPlaces":"Bitte Start und Ziel angeben","t.samePlace":"Start und Ziel sind identisch",
+ "t.needKm":"Bitte die Entfernung eingeben","t.badPay":"Abrechnungskilometer prüfen",
+ "t.needName":"Bitte einen Namen eingeben","t.dupName":"Dieser Ort existiert bereits",
+ "t.editMode":"Bearbeiten – zum Übernehmen speichern","t.noExport":"Keine Fahrten zum Exportieren",
+ "t.csvDone":"CSV mit {0} Fahrten exportiert","t.backupDone":"Backup gespeichert",
+ "t.restored":"Wiederhergestellt","t.badFile":"Datei konnte nicht gelesen werden","t.wiped":"Alle Fahrten gelöscht",
+ "t.noGeo":"Dieser Browser unterstützt kein GPS","t.busy":"Während der Messung nicht möglich",
+ "t.saveFail":"Datei konnte nicht gespeichert werden","t.noStorage":"Speichern nicht möglich",
+ "t.imported":"{0} frühere Einträge übernommen",
+ "c.delSchool":"„{0}“ aus der Liste entfernen?\n(Bereits gespeicherte Fahrten bleiben erhalten)",
+ "c.delTrip":"{0}\n{1} → {2}\nDiese Fahrt löschen?",
+ "c.restore":"Backup mit {0} Fahrten laden.\nMit den vorhandenen Fahrten zusammenführen?  (Abbrechen = ersetzen)",
+ "c.wipe1":"Alle Fahrten werden gelöscht.\nDas lässt sich nicht rückgängig machen. Fortfahren?","c.wipe2":"Wirklich löschen?",
+ "g.base":"Allgemein","g.gs":"Grundschulen","g.os":"Haupt-/Real-/Oberschulen",
+ "g.gym":"Gymnasien","g.fs":"Förderschulen","g.bbs":"Berufsbildende Schulen",
+ "g.custom":"Eigene Orte",
+ "p.home":"Zuhause","p.office":"Büro",
+ "date.month":"{0}.","date.pick":"{1} {0}"
+}};
+var MONTH_DE=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+var lang="ko";
+
+function t(k){
+  var s=(STR[lang]&&STR[lang][k])||STR.ko[k]||k;
+  for(var i=1;i<arguments.length;i++) s=s.split("{"+(i-1)+"}").join(arguments[i]);
+  return s;
+}
+
+/* ================= data ================= */
+var GROUPS=["base","gs","os","gym","fs","bbs","custom"];
+var DEFAULT_SCHOOLS=[
+  {k:"p.home",g:"base"},
+  {k:"p.office",g:"base"},
+
+  {n:"Astrid-Lindgren-Schule",g:"gs"},
+  {n:"Bernard-Rein-Schule",g:"gs"},
+  {n:"Grundschule Am Grünen Kamp",g:"gs"},
+  {n:"Grundschule an der Beethovenstraße",g:"gs"},
+  {n:"Grundschule Bungerhof-Hasbergen",g:"gs"},
+  {n:"Grundschule Deichhorst",g:"gs"},
+  {n:"Grundschule Iprump-Stickgras",g:"gs"},
+  {n:"Hermann-Allmers-Schule",g:"gs"},
+  {n:"Käthe-Kollwitz-Schule",g:"gs"},
+  {n:"Knister-Grundschule",g:"gs"},
+  {n:"Marienschule",g:"gs"},
+  {n:"Overbergschule",g:"gs"},
+  {n:"Parkschule",g:"gs"},
+  {n:"Wilhelm-Niermann-Schule",g:"gs"},
+
+  {n:"Hauptschule im Schulzentrum West",g:"os"},
+  {n:"Oberschule Süd",g:"os"},
+  {n:"Realschule an den Graftwiesen",g:"os"},
+  {n:"Realschule Lilienstraße",g:"os"},
+  {n:"Realschule Uhlandstraße",g:"os"},
+  {n:"Wilhelm-von-der-Heyde-Oberschule",g:"os"},
+  {n:"Integrierte Gesamtschule (IGS) Delmenhorst",g:"os"},
+
+  {n:"Gymnasium an der Willmsstraße",g:"gym"},
+  {n:"Käthe-Stüve-Gymnasium",g:"gym"},
+  {n:"Max-Planck-Gymnasium",g:"gym"},
+
+  {n:"Mosaikschule Delmenhorst",g:"fs"},
+  {n:"Schule an der Karlstraße",g:"fs"},
+
+  {n:"BBS I – Handelslehranstalten",g:"bbs"},
+  {n:"BBS II – Kerschensteiner Schule",g:"bbs"}
+];
+var OLD_G={"기본":"base","Grundschule":"gs","Haupt-/Real-/Oberschule":"os","Gymnasium":"gym",
+  "Förderschule":"fs","Berufsbildende Schule":"bbs","직접 추가":"custom"};
+
+var records=[], schools=[], mode="gps", editId=null, selFrom=null, selTo=null;
+
+/* place name: fixed places (k) follow the language, real school names never change */
+function pname(s){ return s.k?t(s.k):s.n; }
+
+/* ================= storage ================= */
+function lsGet(k,f){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ toast(t("t.noStorage")); } }
+
+function load(){
+  var sl=null; try{ sl=localStorage.getItem(K_LANG); }catch(e){}
+  if(sl==="ko"||sl==="de") lang=sl;
+  else lang=(navigator.language||"").toLowerCase().indexOf("ko")===0?"ko":"de";
+
+  schools=lsGet(K_SCH,null);
+  if(!schools||!schools.length) schools=DEFAULT_SCHOOLS.slice();
+  else schools.forEach(function(s){ if(OLD_G[s.g]) s.g=OLD_G[s.g]; if(GROUPS.indexOf(s.g)<0) s.g="custom"; });
+
+  records=lsGet(K_REC,null);
+  if(!records){
+    records=[];
+    var old=lsGet(K_OLD,[]);
+    if(old&&old.length){
+      old.forEach(function(o){
+        var d=new Date(o.timestamp||Date.now());
+        records.push({id:uid(),ts:o.timestamp||0,date:iso(d),from:o.from||"",to:o.to||"",purpose:"",
+          rawKm:Number(o.rawKm)||0,payKm:Number(o.roundedKm)||0,gps:false});
+      });
+      lsSet(K_REC,records);
+      setTimeout(function(){ toast(t("t.imported",old.length)); },400);
+    }
+  }
+}
+function save(){ lsSet(K_REC,records); }
+
+/* ================= helpers ================= */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function pad(n){ return n<10?"0"+n:""+n; }
+function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function roundPay(km){ return Math.round(Number(km)||0); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+function num(n){ return lang==="de"?String(n).replace(".",","):String(n); }
+function toast(m){
+  var el=document.getElementById("toast"); el.textContent=m; el.classList.add("on");
+  clearTimeout(toast._t); toast._t=setTimeout(function(){ el.classList.remove("on"); },2400);
+}
+function weekStartISO(){
+  var x=new Date(); x.setHours(0,0,0,0);
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return iso(x);
+}
+
+/* ================= language ================= */
+window.setLang=function(l){
+  if(l!==lang){ lang=l; try{ localStorage.setItem(K_LANG,l); }catch(e){} }
+  applyLang();
+};
+function applyLang(){
+  document.documentElement.setAttribute("lang",lang);
+  document.getElementById("langKo").classList.toggle("on",lang==="ko");
+  document.getElementById("langDe").classList.toggle("on",lang==="de");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"),function(el){
+    el.textContent=t(el.getAttribute("data-i18n"));
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-ph]"),function(el){
+    el.setAttribute("placeholder",t(el.getAttribute("data-i18n-ph")));
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-title]"),function(el){
+    el.setAttribute("title",t(el.getAttribute("data-i18n-title")));
+  });
+  document.getElementById("footNote").innerHTML=t("foot.note");
+  document.getElementById("mapHint").innerHTML=t("map.hint");
+  updateMapLink();
+  if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
+  refreshHelp();
+  renderPermUI();
+  fillSelects();
+  renderSchools();
+  render();
+}
+
+/* ================= school select ================= */
+function fillSelects(){
+  var f=document.getElementById("fromSel"), s=document.getElementById("toSel");
+  var fv=f.value, tv=s.value, html="";
+  GROUPS.forEach(function(g){
+    var items=schools.filter(function(x){ return x.g===g; });
+    if(!items.length) return;
+    html+='<optgroup label="'+esc(t("g."+g))+'">';
+    items.forEach(function(x){ var n=pname(x); html+='<option value="'+esc(n)+'">'+esc(n)+'</option>'; });
+    html+='</optgroup>';
+  });
+  html+='<option value="'+OTHER+'">'+esc(t("opt.other"))+'</option>';
+  f.innerHTML=html; s.innerHTML=html;
+  var want=selFrom!=null?selFrom:fv, wantTo=selTo!=null?selTo:tv;
+  if(want) f.value=want;
+  if(wantTo) s.value=wantTo;
+  if(!f.value) f.selectedIndex=0;
+  if(!s.value||s.value===f.value) s.selectedIndex=Math.min(1,s.options.length-1);
+  selFrom=f.value; selTo=s.value;
+}
+function onSelChange(){
+  var f=document.getElementById("fromSel"), s=document.getElementById("toSel");
+  selFrom=f.value; selTo=s.value;
+  document.getElementById("fromOtherWrap").hidden=f.value!==OTHER;
+  document.getElementById("toOtherWrap").hidden=s.value!==OTHER;
+  applyRouteHint();
+  updateMapLink();
+}
+function val(selId,otherId){
+  var v=document.getElementById(selId).value;
+  if(v===OTHER) return document.getElementById(otherId).value.trim();
+  return v;
+}
+window.swapSchools=function(){
+  var f=document.getElementById("fromSel"), s=document.getElementById("toSel");
+  var fo=document.getElementById("fromOther"), so=document.getElementById("toOther");
+  var a=f.value,b=s.value,ao=fo.value,bo=so.value;
+  f.value=b; s.value=a; fo.value=bo; so.value=ao; onSelChange();
+};
+
+/* ================= place management ================= */
+window.openSchools=function(){ renderSchools(); document.getElementById("schoolSheet").classList.add("open"); };
+window.closeSchools=function(){ document.getElementById("schoolSheet").classList.remove("open"); };
+function renderSchools(){
+  var box=document.getElementById("schoolList"), html="";
+  GROUPS.forEach(function(g){
+    schools.forEach(function(s,i){
+      if(s.g!==g) return;
+      html+='<div class="sch"><span class="nm">'+esc(pname(s))+'</span>'+
+            '<button class="addr'+(s.a?" has":"")+'" data-a="'+i+'">'+esc(t("btn.addr"))+'</button>'+
+            '<button data-i="'+i+'">'+esc(lang==="de"?"Entfernen":"삭제")+'</button></div>';
+    });
+  });
+  box.innerHTML=html||'<div class="empty">'+esc(t("empty.places"))+'</div>';
+  Array.prototype.forEach.call(box.querySelectorAll("[data-i]"),function(b){
+    b.onclick=function(){ delSchool(Number(b.getAttribute("data-i"))); };
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("[data-a]"),function(b){
+    b.onclick=function(){ editAddr(Number(b.getAttribute("data-a"))); };
+  });
+}
+function editAddr(i){
+  var s0=schools[i]; if(!s0) return;
+  var v=null;
+  try{ v=window.prompt(t("prompt.addr",pname(s0)),s0.a||""); }catch(e){ return; }
+  if(v===null) return;
+  v=v.trim();
+  if(v) s0.a=v; else delete s0.a;
+  lsSet(K_SCH,schools); renderSchools(); updateMapLink();
+}
+window.addSchool=function(){
+  var el=document.getElementById("newSchool"), n=el.value.trim();
+  if(!n){ toast(t("t.needName")); return; }
+  if(schools.some(function(s){ return pname(s).toLowerCase()===n.toLowerCase(); })){ toast(t("t.dupName")); return; }
+  schools.push({n:n,g:"custom"});
+  lsSet(K_SCH,schools); el.value=""; fillSelects(); renderSchools(); toast(t("t.added"));
+};
+function delSchool(i){
+  if(i<0||i>=schools.length) return;
+  if(!confirm(t("c.delSchool",pname(schools[i])))) return;
+  schools.splice(i,1); lsSet(K_SCH,schools); fillSelects(); renderSchools();
+}
+
+/* ================= mode ================= */
+window.setMode=function(m){
+  if(gps.active){ toast(t("t.busy")); return; }
+  mode=m;
+  document.getElementById("tabGps").classList.toggle("on",m==="gps");
+  document.getElementById("tabMan").classList.toggle("on",m==="man");
+  document.getElementById("gpsPane").hidden=(m!=="gps");
+};
+
+/* ================= GPS ================= */
+var gps={active:false,id:null,dist:0,last:null,t0:0,wake:null,tick:null,acc:null};
+function hav(a,b,c,d){
+  var R=6371,r=Math.PI/180;
+  var dLa=(c-a)*r,dLo=(d-b)*r;
+  var x=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)*Math.sin(dLo/2);
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
+}
+window.gpsStart=function(){
+  if(!navigator.geolocation){ toast(t("t.noGeo")); showHelp(false); return; }
+  if(ENV.file||ENV.insecure){ toast(t("t.noGeo")); showHelp(false); return; }
+  hideHelp();
+  gps.active=true; gps.dist=0; gps.last=null; gps.t0=Date.now(); gps.acc=null;
+  var a=document.getElementById("btnStart"), b=document.getElementById("btnStop");
+  a.disabled=true; a.style.opacity=".4"; b.disabled=false; b.style.opacity="1";
+  document.getElementById("gpsBox").classList.add("rec");
+  document.getElementById("gpsKm").textContent="0.0";
+  document.getElementById("gpsMeta").textContent=t("gps.searching");
+  gps.id=navigator.geolocation.watchPosition(onPos,onErr,
+    {enableHighAccuracy:true,maximumAge:0,timeout:30000});
+  gps.tick=setInterval(function(){
+    if(!gps.active) return;
+    if(gps.acc!=null){ setMeta(); }
+    else if(Date.now()-gps.t0>12000){ document.getElementById("gpsMeta").textContent=t("gps.slow"); }
+  },1000);
+  if(navigator.wakeLock&&navigator.wakeLock.request){
+    navigator.wakeLock.request("screen").then(function(w){ gps.wake=w; },function(){});
+  }
+};
+function onPos(p){
+  var la=p.coords.latitude, lo=p.coords.longitude, ac=p.coords.accuracy;
+  gps.acc=ac;
+  if(permState!=="granted"){ permState="granted"; renderPermUI(); }
+  if(ac>60){ setMeta(); return; }
+  if(gps.last){
+    var d=hav(gps.last.la,gps.last.lo,la,lo);
+    if(d>=0.008&&d<3){ gps.dist+=d; gps.last={la:la,lo:lo}; }
+    else if(d>=3){ gps.last={la:la,lo:lo}; }
+  }else{ gps.last={la:la,lo:lo}; }
+  document.getElementById("gpsKm").textContent=gps.dist.toFixed(1);
+  setMeta();
+}
+/* ---- environment detection + permission help ---- */
+var ENV=(function(){
+  var ua=navigator.userAgent||"";
+  return {
+    file:location.protocol==="file:",
+    insecure:(typeof window.isSecureContext==="boolean")&&!window.isSecureContext&&location.protocol!=="file:",
+    iframe:(function(){ try{ return window.self!==window.top; }catch(e){ return true; } })(),
+    ios:/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),
+    android:/Android/i.test(ua),
+    inapp:/(FBAN|FBAV|Instagram|KAKAOTALK|NAVER|Line\/|DaumApps)/i.test(ua),
+    webview:(/iPhone|iPad|iPod/i.test(ua)&&!/Safari\//.test(ua))
+  };
+})();
+window.openTop=function(){ window.open(location.href,"_blank","noopener"); };
+var lastErr=null, permState="?", hardBlocked=false, hardSwitched=false;
+window.copyLink=function(){
+  var u=location.href;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(u).then(function(){ toast(t("t.linkCopied")); },function(){ promptLink(u); });
+  }else promptLink(u);
+};
+function promptLink(u){ try{ window.prompt(t("btn.copylink"),u); }catch(e){} }
+function diagText(){
+  var L=[];
+  L.push("mode: "+(ENV.file?"file://":ENV.iframe?"iframe":"top")+
+         (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches?" + standalone":"")+
+         (navigator.standalone?" + homescreen":""));
+  L.push("secure: "+(window.isSecureContext?"yes":"no"));
+  L.push("url: "+location.href);
+  L.push("permission: "+permState);
+  L.push("geolocation api: "+(navigator.geolocation?"yes":"no"));
+  L.push("error: "+(lastErr?("code "+lastErr.code+" – "+lastErr.message):"none"));
+  L.push("ua: "+(navigator.userAgent||"").slice(0,110));
+  return L.join("\n");
+}
+window.copyDiag=function(){
+  var txt=diagText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast(t("t.copied")); },function(){ selectDiag(); });
+  }else selectDiag();
+};
+function selectDiag(){
+  var el=document.getElementById("diagText");
+  try{ var r=document.createRange(); r.selectNodeContents(el);
+    var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){}
+}
+function showHelp(policyBlocked){
+  var keys=[];
+  if(ENV.file) keys.push("help.file");
+  else if(policyBlocked||(ENV.iframe&&ENV.ios)){
+    /* embedded page on iOS: settings cannot fix this */
+    if(ENV.webview||ENV.inapp) keys.push("help.inapp2");
+    keys.push("help.blocked");
+    keys.push("help.copylink");
+    keys.push("help.expiry");
+    keys.push("help.usemanual");
+    hardBlocked=true;
+  }else{
+    if(ENV.inapp) keys.push("help.inapp");
+    if(ENV.iframe) keys.push("help.iframe");
+    keys.push(ENV.ios?"help.ios":ENV.android?"help.android":"help.desktop");
+    keys.push("help.reload");
+  }
+  document.getElementById("helpSteps").innerHTML=keys.map(function(k){
+    return "<li>"+t(k)+"</li>"; }).join("");
+  var showTab=(ENV.iframe||policyBlocked)&&!ENV.file;
+  var tab=document.getElementById("btnNewTab");
+  tab.hidden=!showTab;
+  if(showTab) tab.setAttribute("href",location.href);
+  document.getElementById("urlText").textContent=location.href;
+  document.getElementById("urlBox").hidden=!hardBlocked;
+  document.getElementById("btnCopyLink").hidden=!hardBlocked;
+  document.getElementById("btnRetry").hidden=hardBlocked;
+  document.getElementById("helpBtns").classList.toggle("solo",!showTab);
+  if(hardBlocked&&!hardSwitched){ hardSwitched=true; setMode("man"); }
+  document.getElementById("diagText").textContent=diagText();
+  var el=document.getElementById("gpsHelp");
+  el.hidden=false; el.setAttribute("data-keys",keys.join(","));
+}
+function hideHelp(){ var el=document.getElementById("gpsHelp"); el.hidden=true; el.removeAttribute("data-keys"); }
+function refreshHelp(){
+  var el=document.getElementById("gpsHelp");
+  if(el.hidden) return;
+  var keys=(el.getAttribute("data-keys")||"").split(",").filter(Boolean);
+  document.getElementById("helpSteps").innerHTML=keys.map(function(k){
+    return "<li>"+t(k)+"</li>"; }).join("");
+  document.getElementById("diagText").textContent=diagText();
+}
+function renderPermUI(){
+  var box=document.getElementById("permBox"), ok=document.getElementById("permOk");
+  if(ENV.file||ENV.insecure||!navigator.geolocation){ box.hidden=true; ok.hidden=true; return; }
+  if(permState==="granted"){ box.hidden=true; ok.hidden=false; hideHelp(); return; }
+  ok.hidden=true;
+  if(permState==="denied"){ box.hidden=true; return; }   /* red help box takes over */
+  box.hidden=false;                                       /* "prompt" or unknown */
+}
+window.requestPerm=function(){
+  if(!navigator.geolocation){ toast(t("t.noGeo")); showHelp(false); return; }
+  var btn=document.getElementById("permBtn");
+  btn.disabled=true; btn.style.opacity=".6"; btn.textContent=t("btn.allowing");
+  var done=false;
+  var finish=function(){ if(done) return; done=true;
+    btn.disabled=false; btn.style.opacity="1"; btn.textContent=t("btn.allow"); };
+  navigator.geolocation.getCurrentPosition(function(){
+    permState="granted"; finish(); hideHelp(); renderPermUI(); toast(t("t.permOk"));
+  },function(e){
+    finish();
+    if(e&&e.code===1){
+      permState="denied"; lastErr={code:1,message:(e&&e.message)||""};
+      showHelp(/policy|disabled/i.test((e&&e.message)||""));
+    }else{
+      lastErr={code:(e&&e.code)||0,message:(e&&e.message)||""};
+      toast(t("gps.err"));
+    }
+    renderPermUI();
+  },{enableHighAccuracy:false,timeout:20000,maximumAge:600000});
+};
+function checkPermission(){
+  if(ENV.file||ENV.insecure||!navigator.geolocation){ showHelp(false); renderPermUI(); return; }
+  if(!(navigator.permissions&&navigator.permissions.query)){ renderPermUI(); return; }
+  try{
+    navigator.permissions.query({name:"geolocation"}).then(function(st){
+      permState=st.state;
+      if(st.state==="denied") showHelp(false); else hideHelp();
+      renderPermUI();
+      st.onchange=function(){ permState=st.state;
+        if(st.state==="denied") showHelp(false); else hideHelp();
+        renderPermUI(); };
+    },function(){ renderPermUI(); });
+  }catch(e){ renderPermUI(); }
+}
+
+function onErr(e){
+  lastErr={code:(e&&e.code)||0,message:(e&&e.message)||""};
+  var denied=e&&e.code===1;
+  var policy=denied&&/permission|policy|disabled|blocked/i.test((e&&e.message)||"");
+  if(denied){
+    permState="denied";
+    gpsStop();
+    showHelp(policy);
+    renderPermUI();
+    document.getElementById("gpsMeta").textContent=t("gps.denied");
+    return;
+  }
+  /* code 2/3 are transient (tunnel, no fix yet) — keep measuring, just report */
+  if(gps.active) document.getElementById("gpsMeta").textContent=t("gps.err");
+  else{ gpsStop(); document.getElementById("gpsMeta").textContent=t("gps.err"); }
+}
+function setMeta(){
+  var s=Math.floor((Date.now()-gps.t0)/1000);
+  var clock=Math.floor(s/60)+":"+pad(s%60);
+  var a=gps.acc==null?"–":Math.round(gps.acc)+" m";
+  document.getElementById("gpsMeta").innerHTML='<span class="dot"></span>'+esc(t("gps.rec",clock,a));
+}
+window.gpsStop=function(){
+  if(!gps.active) return;
+  if(gps.id!=null) navigator.geolocation.clearWatch(gps.id);
+  clearInterval(gps.tick);
+  if(gps.wake){ try{ gps.wake.release(); }catch(e){} gps.wake=null; }
+  gps.active=false; gps.id=null;
+  var a=document.getElementById("btnStart"), b=document.getElementById("btnStop");
+  a.disabled=false; a.style.opacity="1"; b.disabled=true; b.style.opacity=".4";
+  document.getElementById("gpsBox").classList.remove("rec");
+  var km=Math.round(gps.dist*10)/10;
+  document.getElementById("gpsMeta").textContent=km>0?t("gps.done",num(km.toFixed(1))):t("gps.none");
+  if(km>0){ kmAuto=false; document.getElementById("rawKm").value=km.toFixed(1); previewRound(); }
+};
+
+/* ================= form ================= */
+window.previewRound=function(){
+  var v=parseFloat(document.getElementById("rawKm").value);
+  document.getElementById("payKm").value=isNaN(v)?"":roundPay(v);
+};
+var kmAuto=false;              /* true while the km field holds an auto-filled value */
+window.onKmInput=function(){ kmAuto=false; previewRound(); };
+
+/* ---- route memory: derived from the saved trips, so it is always in sync ---- */
+function routeMap(){
+  var m={};
+  records.forEach(function(r){
+    var k=r.from+"\u0001"+r.to;
+    if(!m[k]) m[k]={from:r.from,to:r.to,n:0,km:r.rawKm,pay:r.payKm,ts:r.ts||0};
+    var e=m[k]; e.n++;
+    if((r.ts||0)>=e.ts){ e.ts=r.ts||0; e.km=r.rawKm; e.pay=r.payKm; }
+  });
+  return m;
+}
+window.applyRouteHint=applyRouteHint;
+function applyRouteHint(){
+  var hint=document.getElementById("kmHint");
+  var from=val("fromSel","fromOther"), to=val("toSel","toOther");
+  var e=(from&&to)?routeMap()[from+"\u0001"+to]:null;
+  if(!e||editId){
+    hint.hidden=true;
+    if(kmAuto&&!editId){
+      document.getElementById("rawKm").value="";
+      document.getElementById("payKm").value="";
+      kmAuto=false;
+    }
+    return;
+  }
+  hint.textContent=t("route.hint",num(e.km),e.n);
+  hint.hidden=false;
+  var f=document.getElementById("rawKm");
+  if(f.value===""||kmAuto){ f.value=e.km; kmAuto=true; previewRound(); }
+}
+function renderRoutes(){
+  var box=document.getElementById("routeBox"), wrap=document.getElementById("routeChips");
+  var m=routeMap(), list=[];
+  for(var k in m) if(Object.prototype.hasOwnProperty.call(m,k)) list.push(m[k]);
+  list.sort(function(a,b){ return b.n-a.n||b.ts-a.ts; });
+  list=list.slice(0,6);
+  if(!list.length){ box.hidden=true; wrap.innerHTML=""; return; }
+  box.hidden=false;
+  wrap.innerHTML=list.map(function(e,i){
+    return '<button type="button" class="chip" data-i="'+i+'">'+
+      '<span class="r">'+esc(shortName(e.from))+' → '+esc(shortName(e.to))+'</span>'+
+      '<span class="km">'+e.pay+' km</span></button>';
+  }).join("");
+  Array.prototype.forEach.call(wrap.querySelectorAll(".chip"),function(b){
+    b.onclick=function(){ useRoute(list[Number(b.getAttribute("data-i"))]); };
+  });
+}
+function mapQuery(name){
+  var s0=schools.filter(function(x){ return pname(x)===name; })[0];
+  if(s0&&s0.a) return s0.a;
+  return name+", Delmenhorst, Deutschland";
+}
+function updateMapLink(){
+  var a=document.getElementById("mapLink");
+  var from=val("fromSel","fromOther"), to=val("toSel","toOther");
+  if(!from||!to||from===to){ a.classList.add("off"); a.removeAttribute("href"); return; }
+  a.classList.remove("off");
+  a.setAttribute("href","https://www.google.com/maps/dir/?api=1&travelmode=driving"+
+    "&origin="+encodeURIComponent(mapQuery(from))+
+    "&destination="+encodeURIComponent(mapQuery(to)));
+}
+function shortName(n){
+  n=String(n||"");
+  return n.length>22?n.slice(0,21)+"…":n;
+}
+function useRoute(e){
+  if(!e) return;
+  ensureOption("fromSel","fromOther","fromOtherWrap",e.from);
+  ensureOption("toSel","toOther","toOtherWrap",e.to);
+  onSelChange();
+  document.getElementById("rawKm").value=e.km;
+  kmAuto=true; previewRound();
+  applyRouteHint();
+  toast(t("route.applied"));
+}
+window.resetForm=function(){
+  editId=null;
+  document.getElementById("rawKm").value="";
+  document.getElementById("payKm").value="";
+  document.getElementById("purpose").value="";
+  document.getElementById("dateIn").value=iso(new Date());
+  kmAuto=false;
+  document.getElementById("kmHint").hidden=true;
+  gps.dist=0;
+  document.getElementById("gpsKm").textContent="0.0";
+  if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
+};
+window.saveTrip=function(alsoReturn){
+  var from=val("fromSel","fromOther"), to=val("toSel","toOther");
+  var raw=parseFloat(document.getElementById("rawKm").value);
+  var payRaw=document.getElementById("payKm").value;
+  var pay=payRaw===""?roundPay(raw):Math.round(parseFloat(payRaw));
+  var date=document.getElementById("dateIn").value||iso(new Date());
+  var purpose=document.getElementById("purpose").value.trim();
+
+  if(!from||!to){ toast(t("t.needPlaces")); return; }
+  if(from===to){ toast(t("t.samePlace")); return; }
+  if(isNaN(raw)||raw<=0){ toast(t("t.needKm")); return; }
+  if(isNaN(pay)||pay<0){ toast(t("t.badPay")); return; }
+
+  if(editId){
+    var r=records.filter(function(x){ return x.id===editId; })[0];
+    if(r){ r.date=date; r.from=from; r.to=to; r.purpose=purpose;
+      r.rawKm=Math.round(raw*10)/10; r.payKm=pay; }
+    editId=null; toast(t("t.updated"));
+  }else{
+    records.push({id:uid(),ts:Date.now(),date:date,from:from,to:to,purpose:purpose,
+      rawKm:Math.round(raw*10)/10,payKm:pay,gps:mode==="gps"});
+    toast(t("t.saved",pay));
+  }
+  if(alsoReturn===true){
+    records.push({id:uid(),ts:Date.now()+1,date:date,from:to,to:from,purpose:purpose,
+      rawKm:Math.round(raw*10)/10,payKm:pay,gps:false});
+    toast(t("t.savedRt",pay*2));
+  }
+  save();
+  document.getElementById("monthSel").value=date.slice(0,7);
+  resetForm();
+  render();
+  applyRouteHint();
+};
+function editTrip(id){
+  var r=records.filter(function(x){ return x.id===id; })[0];
+  if(!r) return;
+  editId=id;
+  ensureOption("fromSel","fromOther","fromOtherWrap",r.from);
+  ensureOption("toSel","toOther","toOtherWrap",r.to);
+  document.getElementById("rawKm").value=r.rawKm;
+  document.getElementById("payKm").value=r.payKm;
+  document.getElementById("dateIn").value=r.date;
+  document.getElementById("purpose").value=r.purpose||"";
+  window.scrollTo({top:0,behavior:"smooth"});
+  toast(t("t.editMode"));
+}
+function ensureOption(selId,otherId,wrapId,name){
+  var sel=document.getElementById(selId);
+  var found=Array.prototype.some.call(sel.options,function(o){ return o.value===name; });
+  if(found){ sel.value=name; document.getElementById(wrapId).hidden=true; }
+  else{ sel.value=OTHER; document.getElementById(otherId).value=name; document.getElementById(wrapId).hidden=false; }
+}
+function delTrip(id){
+  var r=records.filter(function(x){ return x.id===id; })[0];
+  if(!r) return;
+  if(!confirm(t("c.delTrip",fmtDate(r.date),r.from,r.to))) return;
+  records=records.filter(function(x){ return x.id!==id; });
+  save(); render(); toast(t("t.deleted"));
+}
+
+/* ================= render ================= */
+function fmtDate(d){
+  var p=d.split("-");
+  return lang==="de"?(p[2]+"."+p[1]+"."+p[0]):(p[0]+". "+Number(p[1])+". "+Number(p[2])+".");
+}
+function months(){
+  var set={};
+  records.forEach(function(r){ set[r.date.slice(0,7)]=1; });
+  set[iso(new Date()).slice(0,7)]=1;
+  return Object.keys(set).sort().reverse();
+}
+function render(){
+  var sel=document.getElementById("monthSel"), cur=sel.value, ms=months();
+  sel.innerHTML=ms.map(function(m){
+    var y=m.slice(0,4), mo=Number(m.slice(5,7));
+    return '<option value="'+m+'">'+esc(t("date.pick",y,lang==="de"?MONTH_DE[mo-1]:mo))+'</option>';
+  }).join("")+'<option value="all">'+esc(t("opt.all"))+'</option>';
+  sel.value=(cur&&(cur==="all"||ms.indexOf(cur)>=0))?cur:ms[0];
+
+  var thisMonth=iso(new Date()).slice(0,7), ws=weekStartISO(), today=iso(new Date());
+  var w=0,m=0,c=0;
+  records.forEach(function(r){
+    if(r.date.slice(0,7)===thisMonth){ m+=r.payKm; c++; }
+    if(r.date>=ws&&r.date<=today) w+=r.payKm;
+  });
+  document.getElementById("stWeek").textContent=w;
+  document.getElementById("stMonth").textContent=m;
+  document.getElementById("stCount").textContent=c;
+
+  var view=visible();
+  var total=view.reduce(function(a,r){ return a+r.payKm; },0);
+  document.getElementById("mtLabel").textContent=t(sel.value==="all"?"total.all":"total.sel",view.length);
+  document.getElementById("mtValue").textContent=total;
+
+  renderRoutes();
+  var box=document.getElementById("tripList");
+  if(!view.length){ box.innerHTML='<div class="empty">'+esc(t("empty"))+'</div>'; return; }
+  box.innerHTML=view.map(function(r){
+    var p=r.date.split("-"), mo=Number(p[1]);
+    var mlabel=lang==="de"?MONTH_DE[mo-1].slice(0,3)+".":t("date.month",mo);
+    return '<div class="trip">'+
+      '<div class="d"><div class="dd">'+Number(p[2])+'</div><div class="mm">'+esc(mlabel)+'</div></div>'+
+      '<div class="r" data-edit="'+r.id+'">'+
+        '<div class="p">'+esc(r.from)+'<span class="arr">→</span>'+esc(r.to)+'</div>'+
+        '<div class="z">'+(r.gps?"📍 ":"")+esc(r.purpose||t("row.none"))+'</div>'+
+      '</div>'+
+      '<div class="k" data-edit="'+r.id+'"><div class="big">'+r.payKm+' km</div>'+
+        '<div class="raw">'+esc(t("row.raw",num(r.rawKm)))+'</div></div>'+
+      '<button class="x" data-del="'+r.id+'" aria-label="delete">✕</button>'+
+    '</div>';
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll("[data-del]"),function(b){
+    b.onclick=function(){ delTrip(b.getAttribute("data-del")); };
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("[data-edit]"),function(b){
+    b.onclick=function(){ editTrip(b.getAttribute("data-edit")); };
+  });
+}
+window.render=render;
+function visible(){
+  var m=document.getElementById("monthSel").value;
+  var list=records.slice().sort(function(a,b){
+    if(a.date!==b.date) return a.date<b.date?1:-1;
+    return (b.ts||0)-(a.ts||0);
+  });
+  return m==="all"?list:list.filter(function(r){ return r.date.slice(0,7)===m; });
+}
+
+/* ================= export ================= */
+var dlCap=null, dlChecked=false;
+function capDownloads(){
+  if(dlChecked) return Promise.resolve(dlCap);
+  if(!(window.claude&&typeof window.claude.use==="function")){ dlChecked=true; return Promise.resolve(null); }
+  return window.claude.use("downloads").then(function(d){ dlCap=d; dlChecked=true; return d; },
+    function(){ dlChecked=true; return null; });
+}
+function download(name,text,mime,okMsg){
+  var blob=new Blob([text],{type:mime||"text/plain;charset=utf-8"});
+  capDownloads().then(function(d){
+    if(d&&typeof d.save==="function"){
+      d.save({filename:name,data:blob}).then(function(){ toast(okMsg); },
+        function(e){ if(e&&e.code==="declined") return;
+          toast(t("t.saveFail")+(e&&e.code?" ("+e.code+")":"")); });
+      return;
+    }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download=name; a.rel="noopener";
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1500);
+    toast(okMsg);
+  });
+}
+/* CSV stays German — it is handed to the Finanzamt / employer */
+window.exportCSV=function(){
+  var view=visible();
+  if(!view.length){ toast(t("t.noExport")); return; }
+  var m=document.getElementById("monthSel").value;
+  var de=function(n){ return String(n).replace(".",","); };
+  var q=function(s){ return '"'+String(s==null?"":s).replace(/"/g,'""')+'"'; };
+  var rows=["sep=;","Datum;Start;Ziel;Zweck;Tatsaechlich_km;Abrechnung_km"];
+  var tot=0;
+  view.slice().reverse().forEach(function(r){
+    tot+=r.payKm;
+    var p=r.date.split("-");
+    rows.push([p[2]+"."+p[1]+"."+p[0],q(r.from),q(r.to),q(r.purpose||""),de(r.rawKm),r.payKm].join(";"));
+  });
+  rows.push(";;;"+q("Summe")+";;"+tot);
+  download("Fahrtenbuch_Delmenhorst_"+(m==="all"?"gesamt":m)+".csv","﻿"+rows.join("\r\n"),
+    "text/csv;charset=utf-8",t("t.csvDone",view.length));
+};
+window.backup=function(){
+  download("Fahrtenbuch_Backup_"+iso(new Date())+".json",
+    JSON.stringify({v:2,exported:new Date().toISOString(),schools:schools,records:records},null,2),
+    "application/json",t("t.backupDone"));
+};
+window.restore=function(ev){
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var d=JSON.parse(fr.result);
+      var recs=d.records||(Array.isArray(d)?d:null);
+      if(!recs) throw 0;
+      if(!confirm(t("c.restore",recs.length))){ records=recs; }
+      else{
+        var have={}; records.forEach(function(r){ have[r.id]=1; });
+        recs.forEach(function(r){ if(!r.id) r.id=uid(); if(!have[r.id]) records.push(r); });
+      }
+      if(d.schools&&d.schools.length){
+        schools=d.schools;
+        schools.forEach(function(s){ if(OLD_G[s.g]) s.g=OLD_G[s.g]; if(GROUPS.indexOf(s.g)<0) s.g="custom"; });
+        lsSet(K_SCH,schools); fillSelects();
+      }
+      save(); render(); toast(t("t.restored"));
+    }catch(e){ toast(t("t.badFile")); }
+    ev.target.value="";
+  };
+  fr.readAsText(f);
+};
+window.wipe=function(){
+  if(!confirm(t("c.wipe1"))) return;
+  if(!confirm(t("c.wipe2"))) return;
+  records=[]; save(); render(); toast(t("t.wiped"));
+};
+
+/* ================= init ================= */
+load();
+document.getElementById("fromSel").onchange=onSelChange;
+document.getElementById("toSel").onchange=onSelChange;
+document.getElementById("dateIn").value=iso(new Date());
+applyLang();
+onSelChange();
+checkPermission();
+window.addEventListener("beforeunload",function(e){
+  if(gps.active){ e.preventDefault(); e.returnValue=""; }
+});
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden&&!gps.active) checkPermission();
+  if(!document.hidden&&gps.active&&gps.wake===null&&navigator.wakeLock&&navigator.wakeLock.request){
+    navigator.wakeLock.request("screen").then(function(w){ gps.wake=w; },function(){});
+  }
+});
+})();
+</script>
+
+</body>
+</html>
