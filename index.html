@@ -170,7 +170,9 @@
   .toast.on{opacity:.95}
   .foot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
   .tiny{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
-  .ver{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:.5px;opacity:.65;
+  .verbox{text-align:center;margin-top:12px}
+  .verbox span{display:inline-block;background:var(--chip);color:var(--text);border-radius:999px;
+    padding:7px 14px;font-size:12px;font-weight:700;letter-spacing:.3px;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 </style>
 </head>
@@ -321,6 +323,7 @@
 <input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="restore(event)">
 
 <p class="tiny" id="footNote"></p>
+<div class="verbox"><span id="verLine"></span></div>
 
 <div class="sheet" id="schoolSheet" onclick="if(event.target===this)closeSchools()">
   <div class="sheet-in">
@@ -340,7 +343,7 @@
 (function(){
 "use strict";
 
-var APP_VER="2026-09-05a";
+var APP_VER="2026-09-05c";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -381,11 +384,11 @@ ko:{
  "btn.copylink":"주소 복사","t.linkCopied":"주소가 복사되었습니다 · Safari에 붙여넣으세요",
  "route.title":"자주 다니는 구간","route.hint":"이전 기록 {0} km · {1}회","route.applied":"구간을 불러왔습니다",
  "btn.map":"🗺 구글 지도에서 거리 확인",
- "gps.at":"현재 위치: {0}","gps.atNone":"근처에 등록된 장소 없음",
+ "gps.at":"현재 위치: {0}","gps.atNone":"근처에 등록된 장소 없음","place.alt":"{0}  (같은 위치: {1})",
  "t.autoFrom":"출발지 자동 인식 · {0}","t.autoTo":"도착지 자동 인식 · {0}",
  "btn.here":"현재 위치로 지정","t.hereSet":"{0} 위치를 저장했습니다","t.hereFail":"현재 위치를 가져올 수 없습니다",
  "t.hereAsk":"{0}\n\n지금 계신 위치를 이 장소의 좌표로 저장할까요?\n(그 장소에 도착한 상태에서 눌러주세요)",
- "sch.loc":"📍",
+ "sch.loc":"📍","ver.label":"앱 버전",
  "map.hint":"지도에서 경로 km를 확인한 뒤 위 <b>실제 거리</b>에 적으세요. 한 구간당 한 번만 하면, 다음부터는 자동으로 채워집니다.",
  "t.mapNeed":"출발지와 도착지를 먼저 고르세요",
  "btn.addr":"주소","prompt.addr":"{0}\n\n지도 검색에 쓸 주소를 넣으세요.\n(비워두면 «이름, Delmenhorst» 로 검색합니다)",
@@ -460,11 +463,11 @@ de:{
  "btn.copylink":"Adresse kopieren","t.linkCopied":"Adresse kopiert · in Safari einfügen",
  "route.title":"Häufige Strecken","route.hint":"zuletzt {0} km · {1}×","route.applied":"Strecke übernommen",
  "btn.map":"🗺 Entfernung in Google Maps",
- "gps.at":"Standort: {0}","gps.atNone":"Kein bekannter Ort in der Nähe",
+ "gps.at":"Standort: {0}","gps.atNone":"Kein bekannter Ort in der Nähe","place.alt":"{0}  (gleiche Adresse: {1})",
  "t.autoFrom":"Start erkannt · {0}","t.autoTo":"Ziel erkannt · {0}",
  "btn.here":"Aktuellen Standort übernehmen","t.hereSet":"Standort für {0} gespeichert","t.hereFail":"Aktueller Standort nicht verfügbar",
  "t.hereAsk":"{0}\n\nDen aktuellen Standort als Koordinaten für diesen Ort speichern?\n(bitte vor Ort antippen)",
- "sch.loc":"📍",
+ "sch.loc":"📍","ver.label":"App-Version",
  "map.hint":"Die Streckenlänge in der Karte ablesen und oben unter <b>Tatsächlich</b> eintragen. Einmal pro Strecke genügt – danach wird sie automatisch vorgeschlagen.",
  "t.mapNeed":"Bitte zuerst Start und Ziel wählen",
  "btn.addr":"Adresse","prompt.addr":"{0}\n\nAdresse für die Kartensuche eingeben.\n(leer = „Name, Delmenhorst“)",
@@ -538,20 +541,19 @@ var DEFAULT_SCHOOLS=[
 
   {n:"Hauptschule im Schulzentrum West",g:"os",a:"Stubbenweg 3, Delmenhorst",c:[53.0477851,8.6143366]},
   {n:"Oberschule Süd",g:"os",a:"Brendelweg 66, Delmenhorst",c:[53.0273443,8.6283857]},
-  {n:"Realschule an den Graftwiesen",g:"os"},
+  {n:"Realschule an den Graftwiesen",g:"os",a:"Holbeinstraße 3, Delmenhorst",c:[53.0469094,8.6180305]},
   {n:"Realschule Lilienstraße",g:"os",a:"Lilienstraße 21, Delmenhorst",c:[53.0507678,8.6461805]},
-  {n:"Realschule Uhlandstraße",g:"os"},
+  {n:"Realschule Uhlandstraße",g:"os",a:"Uhlandstraße 2, Delmenhorst",c:[53.0581080,8.6199090]},
   {n:"Wilhelm-von-der-Heyde-Oberschule",g:"os",a:"Uhlandstraße 2, Delmenhorst",c:[53.0581080,8.6199090]},
   {n:"Integrierte Gesamtschule (IGS) Delmenhorst",g:"os",a:"Pestalozziweg 88, Delmenhorst",c:[53.0498889,8.6497837]},
 
   {n:"Gymnasium an der Willmsstraße",g:"gym",a:"Willmsstraße 3, Delmenhorst",c:[53.0510606,8.6320125]},
   {n:"Gymnasium an der Willmsstraße – Königsberger Straße",g:"gym",a:"Königsberger Straße 65, Delmenhorst",c:[53.0370015,8.6352250]},
-  {n:"Käthe-Stüve-Gymnasium",g:"gym"},
+  {n:"Käthe-Stüve-Gymnasium",g:"gym",a:"Brendelweg 66, Delmenhorst",c:[53.0273443,8.6283857]},
   {n:"Max-Planck-Gymnasium",g:"gym",a:"Max-Planck-Straße 4, Delmenhorst",c:[53.0437368,8.6309742]},
   {n:"Max-Planck-Gymnasium – Haus D",g:"gym",a:"Berliner Straße 54, Delmenhorst",c:[53.0420851,8.6556054]},
 
-  {n:"Lessingschule",g:"fs",a:"Lessingstraße 25a, Delmenhorst",c:[53.0608788,8.6258883]},
-  {n:"Mosaikschule Delmenhorst",g:"fs"},
+  {n:"Mosaikschule Delmenhorst",g:"fs",a:"Lessingstraße 25a, Delmenhorst",c:[53.0608788,8.6258883]},
   {n:"Schule an der Karlstraße",g:"fs",a:"Karlstraße 8, Delmenhorst",c:[53.0464232,8.6338146]},
   {n:"Wichern-Schule",g:"fs",a:"Oldenburger Straße 333, Delmenhorst",c:[53.0502512,8.5813981]},
 
@@ -589,6 +591,12 @@ function load(){
       if(!cur.a&&d.a) cur.a=d.a;
       if(!cur.c&&d.c) cur.c=d.c;
     });
+    /* Lessingschule is the former name of the Mosaikschule — same building, drop the duplicate */
+    var mig=null; try{ mig=localStorage.getItem("dh_fb_mig1"); }catch(e){}
+    if(!mig){
+      schools=schools.filter(function(s){ return s.n!=="Lessingschule"; });
+      try{ localStorage.setItem("dh_fb_mig1","1"); }catch(e){}
+    }
     lsSet(K_SCH,schools);
   }
 
@@ -645,7 +653,8 @@ function applyLang(){
   Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-title]"),function(el){
     el.setAttribute("title",t(el.getAttribute("data-i18n-title")));
   });
-  document.getElementById("footNote").innerHTML=t("foot.note")+'<br><span class="ver">v'+APP_VER+'</span>';
+  document.getElementById("footNote").innerHTML=t("foot.note");
+  document.getElementById("verLine").textContent=t("ver.label")+" v"+APP_VER;
   document.getElementById("mapHint").innerHTML=t("map.hint");
   updateMapLink();
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
@@ -773,13 +782,21 @@ function hav(a,b,c,d){
 }
 /* ---- which known place is the phone standing at? ---- */
 function nearestPlace(la,lo,maxKm){
-  var best=null,bd=maxKm||0.35;
+  var lim=maxKm||0.35, hits=[];
   schools.forEach(function(s0){
     if(!s0.c) return;
     var d=hav(la,lo,s0.c[0],s0.c[1]);
-    if(d<bd){ bd=d; best=s0; }
+    if(d<lim) hits.push({s:s0,km:d});
   });
-  return best?{s:best,km:bd}:null;
+  if(!hits.length) return null;
+  hits.sort(function(a,b){ return a.km-b.km; });
+  var alt=hits.filter(function(h,i){ return i>0 && h.km-hits[0].km<0.1; })
+              .map(function(h){ return pname(h.s); });
+  return {s:hits[0].s,km:hits[0].km,alt:alt};
+}
+function placeLabel(np){
+  var n=pname(np.s);
+  return np.alt&&np.alt.length ? t("place.alt",n,np.alt.join(", ")) : n;
 }
 function setPlace(which,name){
   ensureOption(which==="from"?"fromSel":"toSel",
@@ -818,7 +835,7 @@ function onPos(p){
   if(!gps.autoFrom){
     gps.autoFrom=true;
     var np=nearestPlace(la,lo);
-    if(np){ gps.hereName=pname(np.s); setPlace("from",gps.hereName); toast(t("t.autoFrom",gps.hereName)); }
+    if(np){ gps.hereName=pname(np.s); setPlace("from",gps.hereName); toast(t("t.autoFrom",placeLabel(np))); }
     else{ gps.hereName=""; }
   }
   if(gps.last){
@@ -997,7 +1014,7 @@ window.gpsStop=function(){
     var np=nearestPlace(gps.here.la,gps.here.lo);
     if(np){
       var n=pname(np.s);
-      if(n!==val("fromSel","fromOther")){ setPlace("to",n); toast(t("t.autoTo",n)); }
+      if(n!==val("fromSel","fromOther")){ setPlace("to",n); toast(t("t.autoTo",placeLabel(np))); }
     }
   }
   var km=Math.round(gps.dist*10)/10;
