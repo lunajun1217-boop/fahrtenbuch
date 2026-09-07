@@ -84,6 +84,10 @@
   .chip .km{flex:0 0 auto;color:var(--blue);font-weight:800}
   .chip:active{opacity:.7}
   .kmhint{font-size:11px;color:var(--blue);font-weight:600;margin:-7px 2px 0;padding-bottom:2px}
+  .savePlace{margin-top:7px;background:var(--chip);border:none;border-radius:9px;padding:8px 12px;
+    color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;width:100%}
+  .rtb{display:inline-block;background:var(--chip);color:var(--blue);border-radius:5px;
+    padding:1px 5px;font-size:10px;font-weight:800;margin-left:5px;vertical-align:1px}
   .maplink{margin-bottom:2px;font-size:14px;padding:11px}
   .maplink.off{opacity:.45;pointer-events:none}
 
@@ -238,11 +242,13 @@
 
   <div id="fromOtherWrap" class="mb" hidden>
     <label data-i18n="f.fromOther"></label>
-    <input id="fromOther" data-i18n-ph="ph.place" oninput="applyRouteHint()">
+    <input id="fromOther" data-i18n-ph="ph.place" oninput="applyRouteHint();updatePlaceBtns()">
+    <button type="button" class="savePlace" id="savePlaceFrom" data-i18n="btn.savePlace" onclick="savePlace('from')" hidden></button>
   </div>
   <div id="toOtherWrap" class="mb" hidden>
     <label data-i18n="f.toOther"></label>
-    <input id="toOther" data-i18n-ph="ph.place" oninput="applyRouteHint()">
+    <input id="toOther" data-i18n-ph="ph.place" oninput="applyRouteHint();updatePlaceBtns()">
+    <button type="button" class="savePlace" id="savePlaceTo" data-i18n="btn.savePlace" onclick="savePlace('to')" hidden></button>
   </div>
 
   <div id="gpsPane">
@@ -343,7 +349,7 @@
 (function(){
 "use strict";
 
-var APP_VER="2026-09-05c";
+var APP_VER="2026-09-06a";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -359,7 +365,14 @@ ko:{
  "f.rawKm":"실제 거리 (km)","f.payKm":"정산 거리 (반올림)","ph.rawKm":"예: 3.4",
  "f.date":"날짜","f.purpose":"목적 / 메모","ph.purpose":"예: Schulbesuch",
  "btn.start":"▶ 출발","btn.stop":"■ 도착",
- "btn.save":"기록 저장","btn.saveReturn":"저장 + 왕복 추가","btn.reset":"입력 초기화",
+ "btn.save":"기록 저장","btn.saveReturn":"왕복으로 저장","btn.reset":"입력 초기화",
+ "rt.badge":"왕복","row.rtRaw":"실제 {0} (편도 {1})",
+ "t.savedRt":"왕복 저장 · {0} + {1} = {2} km → {3} km",
+ "c.merge":"같은 날 반대 방향 기록이 있습니다.\n\n{0}\n{1}\n\n왕복 한 건으로 합칠까요?\n{2} + {3} = {4} km → 정산 {5} km\n(따로 두면 {6} km 로 계산됩니다)",
+ "t.merged":"왕복으로 합쳤습니다 · {0} km",
+ "loc.wait":"위치 확인 중…","loc.coord":"위치 {0}, {1}",
+ "btn.savePlace":"＋ 이 위치를 장소로 저장","t.placeSaved":"{0} 을(를) 장소로 저장했습니다",
+ "t.autoFromNew":"출발지: {0} (등록되지 않은 위치)","t.autoToNew":"도착지: {0} (등록되지 않은 위치)",
  "btn.csv":"CSV 다운로드","btn.backup":"데이터 백업(JSON)","btn.restore":"백업 불러오기",
  "btn.wipe":"전체 삭제","btn.close":"닫기",
  "list.title":"운행 기록","opt.other":"＋ 직접 입력…","opt.all":"전체 기간",
@@ -407,7 +420,7 @@ ko:{
  "help.diag":"진단 정보 (개발자에게 보여주세요)","btn.copy":"진단 정보 복사","t.copied":"복사되었습니다",
  "foot.note":"모든 기록은 이 기기(브라우저) 안에만 저장됩니다.<br>Safari/Chrome에서 <b>홈 화면에 추가</b>하면 앱처럼 사용할 수 있습니다.<br>가끔 <b>백업(JSON)</b>을 받아두면 기기 변경 시 안전합니다.",
  "row.raw":"실제 {0}","row.none":"—","empty":"기록이 없습니다","empty.places":"등록된 장소가 없습니다",
- "t.saved":"저장되었습니다 · {0} km","t.savedRt":"왕복 2건이 저장되었습니다 · 총 {0} km",
+ "t.saved":"저장되었습니다 · {0} km",
  "t.updated":"수정되었습니다","t.deleted":"삭제되었습니다","t.added":"추가되었습니다",
  "t.needPlaces":"출발지와 도착지를 입력하세요","t.samePlace":"출발지와 도착지가 같습니다",
  "t.needKm":"이동 거리를 입력하세요","t.badPay":"정산 거리를 확인하세요",
@@ -438,7 +451,14 @@ de:{
  "f.rawKm":"Tatsächlich (km)","f.payKm":"Abrechnung (gerundet)","ph.rawKm":"z. B. 3.4",
  "f.date":"Datum","f.purpose":"Zweck / Notiz","ph.purpose":"z. B. Schulbesuch",
  "btn.start":"▶ Start","btn.stop":"■ Ziel",
- "btn.save":"Fahrt speichern","btn.saveReturn":"Speichern + Rückfahrt","btn.reset":"Zurücksetzen",
+ "btn.save":"Fahrt speichern","btn.saveReturn":"Als Hin- und Rückfahrt","btn.reset":"Zurücksetzen",
+ "rt.badge":"Hin+Rück","row.rtRaw":"tats. {0} (einfach {1})",
+ "t.savedRt":"Hin- und Rückfahrt · {0} + {1} = {2} km → {3} km",
+ "c.merge":"Für denselben Tag gibt es die Gegenrichtung.\n\n{0}\n{1}\n\nZu einer Hin- und Rückfahrt zusammenfassen?\n{2} + {3} = {4} km → Abrechnung {5} km\n(getrennt ergäbe das {6} km)",
+ "t.merged":"Zu einer Hin- und Rückfahrt zusammengefasst · {0} km",
+ "loc.wait":"Standort wird ermittelt…","loc.coord":"Standort {0}, {1}",
+ "btn.savePlace":"＋ Diesen Standort als Ort speichern","t.placeSaved":"{0} als Ort gespeichert",
+ "t.autoFromNew":"Start: {0} (kein gespeicherter Ort)","t.autoToNew":"Ziel: {0} (kein gespeicherter Ort)",
  "btn.csv":"CSV exportieren","btn.backup":"Backup (JSON)","btn.restore":"Backup laden",
  "btn.wipe":"Alles löschen","btn.close":"Schließen",
  "list.title":"Fahrten","opt.other":"＋ Manuell eingeben…","opt.all":"Gesamter Zeitraum",
@@ -486,7 +506,7 @@ de:{
  "help.diag":"Diagnose (zum Weitergeben)","btn.copy":"Diagnose kopieren","t.copied":"Kopiert",
  "foot.note":"Alle Daten bleiben ausschließlich auf diesem Gerät.<br>In Safari/Chrome über <b>Zum Home-Bildschirm</b> wie eine App nutzbar.<br>Ein gelegentliches <b>Backup (JSON)</b> schützt bei einem Gerätewechsel.",
  "row.raw":"tats. {0}","row.none":"—","empty":"Noch keine Fahrten","empty.places":"Keine Orte vorhanden",
- "t.saved":"Gespeichert · {0} km","t.savedRt":"Hin- und Rückfahrt gespeichert · {0} km",
+ "t.saved":"Gespeichert · {0} km",
  "t.updated":"Änderung gespeichert","t.deleted":"Gelöscht","t.added":"Hinzugefügt",
  "t.needPlaces":"Bitte Start und Ziel angeben","t.samePlace":"Start und Ziel sind identisch",
  "t.needKm":"Bitte die Entfernung eingeben","t.badPay":"Abrechnungskilometer prüfen",
@@ -660,6 +680,7 @@ function applyLang(){
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
   refreshHelp();
   renderPermUI();
+  updatePlaceBtns();
   fillSelects();
   renderSchools();
   render();
@@ -690,8 +711,11 @@ function onSelChange(){
   selFrom=f.value; selTo=s.value;
   document.getElementById("fromOtherWrap").hidden=f.value!==OTHER;
   document.getElementById("toOtherWrap").hidden=s.value!==OTHER;
+  if(s.value!==OTHER) pendingLoc.to=null;
+  if(f.value!==OTHER) pendingLoc.from=null;
   applyRouteHint();
   updateMapLink();
+  updatePlaceBtns();
 }
 function val(selId,otherId){
   var v=document.getElementById(selId).value;
@@ -794,6 +818,78 @@ function nearestPlace(la,lo,maxKm){
               .map(function(h){ return pname(h.s); });
   return {s:hits[0].s,km:hits[0].km,alt:alt};
 }
+var pendingLoc={from:null,to:null};
+/* turn raw coordinates into something a Fahrtenbuch can show.
+   OpenStreetMap lookup when online, coordinates when not. */
+function reverseGeo(la,lo){
+  if(!window.fetch) return Promise.resolve(null);
+  var u="https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1"+
+        "&accept-language=de&lat="+la+"&lon="+lo;
+  var ctl=null, timer=null;
+  try{ ctl=new AbortController(); timer=setTimeout(function(){ ctl.abort(); },8000); }catch(e){}
+  return fetch(u,ctl?{signal:ctl.signal}:{}).then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      if(timer) clearTimeout(timer);
+      if(!j) return null;
+      var a=j.address||{};
+      var road=a.road||a.pedestrian||a.footway||a.residential||"";
+      var nr=a.house_number?(" "+a.house_number):"";
+      var city=a.city||a.town||a.village||a.municipality||"";
+      var nm=j.name||a.amenity||a.shop||a.office||"";
+      var parts=[];
+      if(nm&&nm!==road) parts.push(nm);
+      if(road) parts.push(road+nr);
+      if(city&&parts.join(", ").indexOf(city)<0) parts.push(city);
+      var out=parts.join(", ").trim();
+      return out||null;
+    })
+    .catch(function(){ if(timer) clearTimeout(timer); return null; });
+}
+function setUnknownPlace(side,la,lo){
+  var selId=side==="from"?"fromSel":"toSel";
+  var otherId=side==="from"?"fromOther":"toOther";
+  var wrapId=side==="from"?"fromOtherWrap":"toOtherWrap";
+  var sel=document.getElementById(selId), inp=document.getElementById(otherId);
+  sel.value=OTHER;
+  document.getElementById(wrapId).hidden=false;
+  inp.value=t("loc.wait");
+  pendingLoc[side]={la:la,lo:lo,name:null};
+  onSelChange();
+  reverseGeo(la,lo).then(function(name){
+    if(!pendingLoc[side]) return;
+    var label=name||t("loc.coord",la.toFixed(4),lo.toFixed(4));
+    pendingLoc[side].name=label;
+    if(inp.value===t("loc.wait")||inp.value==="") inp.value=label;
+    updatePlaceBtns();
+    applyRouteHint();
+    toast(t(side==="from"?"t.autoFromNew":"t.autoToNew",label));
+  });
+  updatePlaceBtns();
+}
+function updatePlaceBtns(){
+  ["from","to"].forEach(function(side){
+    var btn=document.getElementById(side==="from"?"savePlaceFrom":"savePlaceTo");
+    var wrap=document.getElementById(side==="from"?"fromOtherWrap":"toOtherWrap");
+    var inp=document.getElementById(side==="from"?"fromOther":"toOther");
+    btn.hidden=!(pendingLoc[side]&&!wrap.hidden&&inp.value.trim()&&inp.value!==t("loc.wait"));
+  });
+}
+window.savePlace=function(side){
+  var loc=pendingLoc[side]; if(!loc) return;
+  var inp=document.getElementById(side==="from"?"fromOther":"toOther");
+  var nm=inp.value.trim();
+  if(!nm||nm===t("loc.wait")){ toast(t("t.needName")); return; }
+  if(schools.some(function(x){ return pname(x).toLowerCase()===nm.toLowerCase(); })){ toast(t("t.dupName")); return; }
+  schools.push({n:nm,g:"custom",c:[loc.la,loc.lo]});
+  lsSet(K_SCH,schools);
+  pendingLoc[side]=null;
+  fillSelects();
+  ensureOption(side==="from"?"fromSel":"toSel",
+               side==="from"?"fromOther":"toOther",
+               side==="from"?"fromOtherWrap":"toOtherWrap", nm);
+  onSelChange();
+  toast(t("t.placeSaved",nm));
+};
 function placeLabel(np){
   var n=pname(np.s);
   return np.alt&&np.alt.length ? t("place.alt",n,np.alt.join(", ")) : n;
@@ -836,7 +932,7 @@ function onPos(p){
     gps.autoFrom=true;
     var np=nearestPlace(la,lo);
     if(np){ gps.hereName=pname(np.s); setPlace("from",gps.hereName); toast(t("t.autoFrom",placeLabel(np))); }
-    else{ gps.hereName=""; }
+    else{ gps.hereName=""; setUnknownPlace("from",la,lo); }
   }
   if(gps.last){
     var d=hav(gps.last.la,gps.last.lo,la,lo);
@@ -1015,6 +1111,8 @@ window.gpsStop=function(){
     if(np){
       var n=pname(np.s);
       if(n!==val("fromSel","fromOther")){ setPlace("to",n); toast(t("t.autoTo",placeLabel(np))); }
+    }else if(gps.dist>0.15){
+      setUnknownPlace("to",gps.here.la,gps.here.lo);
     }
   }
   var km=Math.round(gps.dist*10)/10;
@@ -1034,6 +1132,7 @@ window.onKmInput=function(){ kmAuto=false; previewRound(); };
 function routeMap(){
   var m={};
   records.forEach(function(r){
+    if(r.rt) return;
     var k=r.from+"\u0001"+r.to;
     if(!m[k]) m[k]={from:r.from,to:r.to,n:0,km:r.rawKm,pay:r.payKm,ts:r.ts||0};
     var e=m[k]; e.n++;
@@ -1042,6 +1141,7 @@ function routeMap(){
   return m;
 }
 window.applyRouteHint=applyRouteHint;
+window.updatePlaceBtns=updatePlaceBtns;
 function applyRouteHint(){
   var hint=document.getElementById("kmHint");
   var from=val("fromSel","fromOther"), to=val("toSel","toOther");
@@ -1112,12 +1212,14 @@ window.resetForm=function(){
   document.getElementById("purpose").value="";
   document.getElementById("dateIn").value=iso(new Date());
   kmAuto=false;
+  pendingLoc={from:null,to:null};
+  updatePlaceBtns();
   document.getElementById("kmHint").hidden=true;
   gps.dist=0;
   document.getElementById("gpsKm").textContent="0.0";
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
 };
-window.saveTrip=function(alsoReturn){
+window.saveTrip=function(roundTrip){
   var from=val("fromSel","fromOther"), to=val("toSel","toOther");
   var raw=parseFloat(document.getElementById("rawKm").value);
   var payRaw=document.getElementById("payKm").value;
@@ -1130,22 +1232,48 @@ window.saveTrip=function(alsoReturn){
   if(isNaN(raw)||raw<=0){ toast(t("t.needKm")); return; }
   if(isNaN(pay)||pay<0){ toast(t("t.badPay")); return; }
 
+  var one=Math.round(raw*10)/10;
+
   if(editId){
     var r=records.filter(function(x){ return x.id===editId; })[0];
     if(r){ r.date=date; r.from=from; r.to=to; r.purpose=purpose;
-      r.rawKm=Math.round(raw*10)/10; r.payKm=pay; }
+      r.rawKm=one; r.payKm=pay; }
     editId=null; toast(t("t.updated"));
-  }else{
+    save();
+  }else if(roundTrip===true){
+    /* one leg is `one` km — the RETURN trip is settled on the summed distance,
+       so 2.3 + 2.3 = 4.6 becomes 5 km, not 2 + 2 = 4 km */
+    var total=Math.round(one*2*10)/10, rtPay=roundPay(total);
     records.push({id:uid(),ts:Date.now(),date:date,from:from,to:to,purpose:purpose,
-      rawKm:Math.round(raw*10)/10,payKm:pay,gps:mode==="gps"});
+      rawKm:total,legKm:one,rt:true,payKm:rtPay,gps:mode==="gps"});
+    toast(t("t.savedRt",num(one),num(one),num(total),rtPay));
+    save();
+  }else{
+    /* is this the way back of a trip already logged today? */
+    var back=records.filter(function(x){
+      return !x.rt && x.date===date && x.from===to && x.to===from; })
+      .sort(function(a,b){ return (b.ts||0)-(a.ts||0); })[0];
+    if(back){
+      var sum=Math.round((back.rawKm+one)*10)/10;
+      var merged=roundPay(sum), apart=back.payKm+pay;
+      if(confirm(t("c.merge",back.from+" → "+back.to+"  ("+num(back.rawKm)+" km)",
+                            from+" → "+to+"  ("+num(one)+" km)",
+                            num(back.rawKm),num(one),num(sum),merged,apart))){
+        back.rt=true; back.legKm=Math.round((sum/2)*10)/10;
+        back.rawKm=sum; back.payKm=merged; back.ts=Date.now();
+        if(purpose&&!back.purpose) back.purpose=purpose;
+        toast(t("t.merged",merged));
+        save();
+        document.getElementById("monthSel").value=date.slice(0,7);
+        resetForm(); render(); applyRouteHint();
+        return;
+      }
+    }
+    records.push({id:uid(),ts:Date.now(),date:date,from:from,to:to,purpose:purpose,
+      rawKm:one,payKm:pay,gps:mode==="gps"});
     toast(t("t.saved",pay));
+    save();
   }
-  if(alsoReturn===true){
-    records.push({id:uid(),ts:Date.now()+1,date:date,from:to,to:from,purpose:purpose,
-      rawKm:Math.round(raw*10)/10,payKm:pay,gps:false});
-    toast(t("t.savedRt",pay*2));
-  }
-  save();
   document.getElementById("monthSel").value=date.slice(0,7);
   resetForm();
   render();
@@ -1161,6 +1289,7 @@ function editTrip(id){
   document.getElementById("payKm").value=r.payKm;
   document.getElementById("dateIn").value=r.date;
   document.getElementById("purpose").value=r.purpose||"";
+  document.getElementById("kmHint").hidden=true;
   window.scrollTo({top:0,behavior:"smooth"});
   toast(t("t.editMode"));
 }
@@ -1221,11 +1350,13 @@ function render(){
     return '<div class="trip">'+
       '<div class="d"><div class="dd">'+Number(p[2])+'</div><div class="mm">'+esc(mlabel)+'</div></div>'+
       '<div class="r" data-edit="'+r.id+'">'+
-        '<div class="p">'+esc(r.from)+'<span class="arr">→</span>'+esc(r.to)+'</div>'+
+        '<div class="p">'+esc(r.from)+'<span class="arr">'+(r.rt?"⇄":"→")+'</span>'+esc(r.to)+
+          (r.rt?'<span class="rtb">'+esc(t("rt.badge"))+'</span>':"")+'</div>'+
         '<div class="z">'+(r.gps?"📍 ":"")+esc(r.purpose||t("row.none"))+'</div>'+
       '</div>'+
       '<div class="k" data-edit="'+r.id+'"><div class="big">'+r.payKm+' km</div>'+
-        '<div class="raw">'+esc(t("row.raw",num(r.rawKm)))+'</div></div>'+
+        '<div class="raw">'+esc(r.rt&&r.legKm?t("row.rtRaw",num(r.rawKm),num(r.legKm))
+                                             :t("row.raw",num(r.rawKm)))+'</div></div>'+
       '<button class="x" data-del="'+r.id+'" aria-label="delete">✕</button>'+
     '</div>';
   }).join("");
@@ -1278,14 +1409,16 @@ window.exportCSV=function(){
   var m=document.getElementById("monthSel").value;
   var de=function(n){ return String(n).replace(".",","); };
   var q=function(s){ return '"'+String(s==null?"":s).replace(/"/g,'""')+'"'; };
-  var rows=["sep=;","Datum;Start;Ziel;Zweck;Tatsaechlich_km;Abrechnung_km"];
+  var rows=["sep=;","Datum;Start;Ziel;Art;Zweck;Tatsaechlich_km;Abrechnung_km"];
   var tot=0;
   view.slice().reverse().forEach(function(r){
     tot+=r.payKm;
     var p=r.date.split("-");
-    rows.push([p[2]+"."+p[1]+"."+p[0],q(r.from),q(r.to),q(r.purpose||""),de(r.rawKm),r.payKm].join(";"));
+    rows.push([p[2]+"."+p[1]+"."+p[0],q(r.from),q(r.to),
+      q(r.rt?"Hin- und Rueckfahrt":"einfach"),
+      q(r.purpose||""),de(r.rawKm),r.payKm].join(";"));
   });
-  rows.push(";;;"+q("Summe")+";;"+tot);
+  rows.push(";;;;"+q("Summe")+";;"+tot);
   download("Fahrtenbuch_Delmenhorst_"+(m==="all"?"gesamt":m)+".csv","﻿"+rows.join("\r\n"),
     "text/csv;charset=utf-8",t("t.csvDone",view.length));
 };
