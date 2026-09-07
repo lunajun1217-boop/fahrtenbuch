@@ -349,7 +349,7 @@
 (function(){
 "use strict";
 
-var APP_VER="2026-09-06a";
+var APP_VER="2026-09-06b";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -575,7 +575,6 @@ var DEFAULT_SCHOOLS=[
 
   {n:"Mosaikschule Delmenhorst",g:"fs",a:"Lessingstraße 25a, Delmenhorst",c:[53.0608788,8.6258883]},
   {n:"Schule an der Karlstraße",g:"fs",a:"Karlstraße 8, Delmenhorst",c:[53.0464232,8.6338146]},
-  {n:"Wichern-Schule",g:"fs",a:"Oldenburger Straße 333, Delmenhorst",c:[53.0502512,8.5813981]},
 
   {n:"BBS I – Handelslehranstalten",g:"bbs",a:"Richtstraße 26, Delmenhorst",c:[53.0560098,8.6261162]},
   {n:"BBS II – Kerschensteiner Schule",g:"bbs",a:"Wiekhorner Heuweg 56-58, Delmenhorst",c:[53.0426902,8.6146729]}
@@ -616,6 +615,12 @@ function load(){
     if(!mig){
       schools=schools.filter(function(s){ return s.n!=="Lessingschule"; });
       try{ localStorage.setItem("dh_fb_mig1","1"); }catch(e){}
+    }
+    /* Wichern-Schule is not part of the round — remove it once */
+    var mig2=null; try{ mig2=localStorage.getItem("dh_fb_mig2"); }catch(e){}
+    if(!mig2){
+      schools=schools.filter(function(s){ return s.n!=="Wichern-Schule"; });
+      try{ localStorage.setItem("dh_fb_mig2","1"); }catch(e){}
     }
     lsSet(K_SCH,schools);
   }
