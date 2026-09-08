@@ -174,6 +174,15 @@
   .toast.on{opacity:.95}
   .foot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
   .tiny{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+  .updbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--blue);color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px;
+    font-size:12.5px;font-weight:700}
+  .updbar b{font-variant-numeric:tabular-nums}
+  .updbar button{flex:0 0 auto;background:#fff;color:var(--blue);border:none;border-radius:9px;
+    padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer}
+  .roadinfo{font-size:11.5px;color:var(--muted);margin:7px 2px 0;line-height:1.5}
+  .roadinfo.ok{color:var(--green);font-weight:700}
+  .roadinfo.bad{color:var(--red);font-weight:700}
   .verbox{text-align:center;margin-top:12px}
   .verbox span{display:inline-block;background:var(--chip);color:var(--text);border-radius:999px;
     padding:7px 14px;font-size:12px;font-weight:700;letter-spacing:.3px;
@@ -181,6 +190,10 @@
 </style>
 </head>
 <body>
+<div class="updbar" id="updBar" hidden>
+  <span><span data-i18n="upd.msg"></span> <b id="updVer"></b></span>
+  <button data-i18n="upd.btn" onclick="doUpdate()"></button>
+</div>
 
 
 <header>
@@ -290,6 +303,9 @@
     </div>
   </div>
 
+  <button type="button" class="b b-outline" id="btnRoad" data-i18n="btn.road" onclick="roadKm()"></button>
+  <p class="roadinfo" id="roadInfo"></p>
+
   <a class="b b-outline maplink" id="mapLink" data-i18n="btn.map" target="_blank" rel="noopener"></a>
   <p class="note" id="mapHint"></p>
 
@@ -349,7 +365,7 @@
 (function(){
 "use strict";
 
-var APP_VER="2026-09-06b";
+var APP_VER="2026-09-09a";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -397,6 +413,14 @@ ko:{
  "btn.copylink":"주소 복사","t.linkCopied":"주소가 복사되었습니다 · Safari에 붙여넣으세요",
  "route.title":"자주 다니는 구간","route.hint":"이전 기록 {0} km · {1}회","route.applied":"구간을 불러왔습니다",
  "btn.map":"🗺 구글 지도에서 거리 확인",
+ "btn.road":"🚗 도로 최단거리 자동 계산",
+ "road.calc":"도로 거리를 계산하는 중…",
+ "road.pick":"출발지와 도착지를 먼저 고르세요",
+ "road.noCoord":"이 장소의 좌표가 없어 계산할 수 없습니다 (학교 목록에서 주소를 확인하세요)",
+ "road.set":"도로 최단거리 {0} km → 정산 {1} km",
+ "road.diff":"{0} km → 도로 최단거리 {1} km 로 바꿨습니다 (정산 {2} km)",
+ "road.err":"거리 계산 서버에 연결하지 못했습니다 (인터넷 확인)",
+ "upd.msg":"새 버전이 나왔습니다","upd.btn":"업데이트",
  "gps.at":"현재 위치: {0}","gps.atNone":"근처에 등록된 장소 없음","place.alt":"{0}  (같은 위치: {1})",
  "t.autoFrom":"출발지 자동 인식 · {0}","t.autoTo":"도착지 자동 인식 · {0}",
  "btn.here":"현재 위치로 지정","t.hereSet":"{0} 위치를 저장했습니다","t.hereFail":"현재 위치를 가져올 수 없습니다",
@@ -483,6 +507,14 @@ de:{
  "btn.copylink":"Adresse kopieren","t.linkCopied":"Adresse kopiert · in Safari einfügen",
  "route.title":"Häufige Strecken","route.hint":"zuletzt {0} km · {1}×","route.applied":"Strecke übernommen",
  "btn.map":"🗺 Entfernung in Google Maps",
+ "btn.road":"🚗 Kürzeste Straßenroute berechnen",
+ "road.calc":"Straßenentfernung wird berechnet…",
+ "road.pick":"Erst Start und Ziel wählen",
+ "road.noCoord":"Für diesen Ort fehlen die Koordinaten (Adresse in der Schulliste prüfen)",
+ "road.set":"Kürzeste Straßenroute {0} km → Abrechnung {1} km",
+ "road.diff":"{0} km → auf {1} km Straßenroute geändert (Abrechnung {2} km)",
+ "road.err":"Routing-Dienst nicht erreichbar (Internetverbindung prüfen)",
+ "upd.msg":"Neue Version verfügbar","upd.btn":"Aktualisieren",
  "gps.at":"Standort: {0}","gps.atNone":"Kein bekannter Ort in der Nähe","place.alt":"{0}  (gleiche Adresse: {1})",
  "t.autoFrom":"Start erkannt · {0}","t.autoTo":"Ziel erkannt · {0}",
  "btn.here":"Aktuellen Standort übernehmen","t.hereSet":"Standort für {0} gespeichert","t.hereFail":"Aktueller Standort nicht verfügbar",
@@ -1182,12 +1214,137 @@ function renderRoutes(){
     b.onclick=function(){ useRoute(list[Number(b.getAttribute("data-i"))]); };
   });
 }
+/* ================= road distance =================
+   Google's Directions API needs a paid key, so the shortest driving route comes
+   from OSRM (OpenStreetMap); Valhalla is the fallback if OSRM is unreachable.
+   Both are keyless and return the same road network Google Maps drives on. */
+function coordFor(side){
+  var p=pendingLoc[side];
+  if(p&&typeof p.la==="number") return [p.la,p.lo];
+  var name=side==="from"?val("fromSel","fromOther"):val("toSel","toOther");
+  var s0=schools.filter(function(x){ return pname(x)===name; })[0];
+  if(s0&&s0.c&&s0.c.length===2) return [Number(s0.c[0]),Number(s0.c[1])];
+  return null;
+}
+/* a place added by hand has an address but no coordinates yet — look them up
+   once and keep them, so the next calculation is instant */
+var K_GEO="dh_fb_geo_v1";
+function geocodeAddr(addr){
+  var cache=lsGet(K_GEO,{});
+  if(cache[addr]) return Promise.resolve(cache[addr]);
+  if(!window.fetch) return Promise.reject(new Error("nofetch"));
+  var u="https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de&q="+
+        encodeURIComponent(addr);
+  return fetch(u,{headers:{Accept:"application/json"}})
+    .then(function(r){ return r.ok?r.json():Promise.reject(new Error("http")); })
+    .then(function(j){
+      if(!j||!j.length) throw new Error("none");
+      var c=[Number(j[0].lat),Number(j[0].lon)];
+      cache[addr]=c; lsSet(K_GEO,cache);
+      return c;
+    });
+}
+function coordAsync(side){
+  var c=coordFor(side);
+  if(c) return Promise.resolve(c);
+  var selId=side==="from"?"fromSel":"toSel";
+  var name=side==="from"?val("fromSel","fromOther"):val("toSel","toOther");
+  var s0=schools.filter(function(x){ return pname(x)===name; })[0];
+  var isFree=document.getElementById(selId).value===OTHER;
+  var addr=(s0&&s0.a)||(isFree&&name?name+", Delmenhorst":"");
+  if(!addr) return Promise.reject(new Error("nocoord"));
+  return geocodeAddr(addr).then(function(pt){
+    if(s0){ s0.c=pt; lsSet(K_SCH,schools); }
+    return pt;
+  });
+}
+function osrmKm(a,b){
+  var u="https://router.project-osrm.org/route/v1/driving/"+
+    a[1]+","+a[0]+";"+b[1]+","+b[0]+"?overview=false&alternatives=false";
+  return fetch(u).then(function(r){ return r.ok?r.json():Promise.reject(new Error("http")); })
+    .then(function(j){
+      if(!j||j.code!=="Ok"||!j.routes||!j.routes.length) throw new Error("route");
+      return j.routes[0].distance/1000;
+    });
+}
+function valhallaKm(a,b){
+  return fetch("https://valhalla1.openstreetmap.de/route",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],
+                         costing:"auto",units:"kilometers"})
+  }).then(function(r){ return r.ok?r.json():Promise.reject(new Error("http")); })
+    .then(function(j){
+      if(!j||!j.trip||!j.trip.summary) throw new Error("route");
+      return j.trip.summary.length;
+    });
+}
+function roadDistance(a,b){
+  return osrmKm(a,b).catch(function(){ return valhallaKm(a,b); });
+}
+window.roadKm=function(){
+  var info=document.getElementById("roadInfo"), btn=document.getElementById("btnRoad");
+  function say(msg,cls){ info.textContent=msg; info.className="roadinfo"+(cls?" "+cls:""); }
+  var from=val("fromSel","fromOther"), to=val("toSel","toOther");
+  if(!from||!to||from===to){ say(t("road.pick"),"bad"); return; }
+  say(t("road.calc"));
+  btn.disabled=true;
+  Promise.all([coordAsync("from"),coordAsync("to")]).then(function(pts){
+    return roadDistance(pts[0],pts[1]);
+  }).then(function(km){
+    btn.disabled=false;
+    km=Math.round(km*10)/10;
+    var f=document.getElementById("rawKm");
+    var cur=parseFloat(f.value);
+    f.value=km.toFixed(1);
+    kmAuto=false; previewRound();
+    var pay=roundPay(km);
+    if(isNaN(cur)||Math.abs(cur-km)<0.05) say(t("road.set",num(km.toFixed(1)),pay),"ok");
+    else say(t("road.diff",num(cur.toFixed(1)),num(km.toFixed(1)),pay),"ok");
+    applyRouteHint();
+  }).catch(function(e){
+    btn.disabled=false;
+    say(t(e&&e.message==="nocoord"?"road.noCoord":"road.err"),"bad");
+  });
+};
+
+/* ================= update check =================
+   One static file behind a home-screen install caches hard — ask the server
+   which version it holds and offer a real reload when it differs. */
+var lastUpdCheck=0;
+function checkUpdate(){
+  if(location.protocol==="file:") return;
+  if(Date.now()-lastUpdCheck<300000) return;
+  lastUpdCheck=Date.now();
+  fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"})
+    .then(function(r){ return r.ok?r.text():null; })
+    .then(function(txt){
+      if(!txt) return;
+      var m=txt.match(/APP_VER="([^"]+)"/);
+      if(!m||!m[1]||m[1]===APP_VER) return;
+      document.getElementById("updVer").textContent="v"+m[1];
+      document.getElementById("updBar").hidden=false;
+    })
+    .catch(function(){});
+}
+window.doUpdate=function(){
+  var go=function(){ location.replace(location.pathname+"?v="+Date.now()); };
+  if(window.caches&&caches.keys){
+    caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); })
+      .then(go,go);
+  } else go();
+};
+
 function mapQuery(name){
   var s0=schools.filter(function(x){ return pname(x)===name; })[0];
   if(s0&&s0.a) return s0.a;
   return name+", Delmenhorst, Deutschland";
 }
+function clearRoadInfo(){
+  var el=document.getElementById("roadInfo");
+  if(el){ el.textContent=""; el.className="roadinfo"; }
+}
 function updateMapLink(){
+  clearRoadInfo();
   var a=document.getElementById("mapLink");
   var from=val("fromSel","fromOther"), to=val("toSel","toOther");
   if(!from||!to||from===to){ a.classList.add("off"); a.removeAttribute("href"); return; }
@@ -1220,6 +1377,7 @@ window.resetForm=function(){
   pendingLoc={from:null,to:null};
   updatePlaceBtns();
   document.getElementById("kmHint").hidden=true;
+  clearRoadInfo();
   gps.dist=0;
   document.getElementById("gpsKm").textContent="0.0";
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
@@ -1470,10 +1628,12 @@ document.getElementById("dateIn").value=iso(new Date());
 applyLang();
 onSelChange();
 checkPermission();
+checkUpdate();
 window.addEventListener("beforeunload",function(e){
   if(gps.active){ e.preventDefault(); e.returnValue=""; }
 });
 document.addEventListener("visibilitychange",function(){
+  if(!document.hidden) checkUpdate();
   if(!document.hidden&&!gps.active) checkPermission();
   if(!document.hidden&&gps.active&&gps.wake===null&&navigator.wakeLock&&navigator.wakeLock.request){
     navigator.wakeLock.request("screen").then(function(w){ gps.wake=w; },function(){});
