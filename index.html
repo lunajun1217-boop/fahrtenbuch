@@ -183,6 +183,33 @@
   .roadinfo{font-size:11.5px;color:var(--muted);margin:7px 2px 0;line-height:1.5}
   .roadinfo.ok{color:var(--green);font-weight:700}
   .roadinfo.bad{color:var(--red);font-weight:700}
+  /* ---- full-screen driving mode ---- */
+  #driveView{position:fixed;inset:0;z-index:80;background:var(--bg);color:var(--text);
+    display:flex;flex-direction:column;box-sizing:border-box;overflow-y:auto;
+    padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 18px)}
+  .dv-top{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .dv-state{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:800;
+    letter-spacing:.5px;color:var(--red)}
+  #driveView.done .dv-state{color:var(--green)}
+  .dv-state .d{width:10px;height:10px;border-radius:50%;background:currentColor;
+    animation:dvp 1.2s ease-in-out infinite}
+  #driveView.done .dv-state .d{animation:none}
+  @keyframes dvp{0%,100%{opacity:1}50%{opacity:.2}}
+  .dv-x{background:none;border:none;color:var(--muted);font-size:15px;font-weight:700;
+    padding:6px 4px;cursor:pointer}
+  .dv-mid{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;
+    align-items:center;text-align:center;gap:22px;padding:20px 0}
+  .dv-lab{font-size:11.5px;font-weight:800;letter-spacing:1.2px;color:var(--muted)}
+  .dv-place{font-size:23px;font-weight:800;line-height:1.32;margin-top:6px;word-break:break-word}
+  .dv-arrow{font-size:19px;color:var(--muted);line-height:1}
+  .dv-km{font-size:62px;font-weight:800;line-height:1;color:var(--blue);
+    font-variant-numeric:tabular-nums}
+  .dv-km .u{font-size:21px;font-weight:700;color:var(--muted);margin-left:6px}
+  .dv-meta{font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.5}
+  .dv-btns{flex:0 0 auto;display:grid;gap:9px}
+  .dv-btns button.b{padding:18px 12px;font-size:17px;border-radius:14px}
+  /* the toast must not sit on top of the big driving buttons */
+  body.driving .toast{bottom:auto;top:calc(env(safe-area-inset-top) + 66px)}
   .verbox{text-align:center;margin-top:12px}
   .verbox span{display:inline-block;background:var(--chip);color:var(--text);border-radius:999px;
     padding:7px 14px;font-size:12px;font-weight:700;letter-spacing:.3px;
@@ -190,6 +217,35 @@
 </style>
 </head>
 <body>
+
+<div id="driveView" hidden>
+  <div class="dv-top">
+    <div class="dv-state"><span class="d"></span><span id="dvState"></span></div>
+    <button class="dv-x" id="dvX" data-i18n="dv.close" onclick="driveClose()"></button>
+  </div>
+  <div class="dv-mid">
+    <div>
+      <div class="dv-lab" data-i18n="dv.from"></div>
+      <div class="dv-place" id="dvFrom">–</div>
+    </div>
+    <div class="dv-arrow" id="dvArrow" hidden>▼</div>
+    <div id="dvToWrap" hidden>
+      <div class="dv-lab" data-i18n="dv.to"></div>
+      <div class="dv-place" id="dvTo">–</div>
+    </div>
+    <div>
+      <div class="dv-km"><span id="dvKm">0.0</span><span class="u">km</span></div>
+      <div class="dv-meta" id="dvMeta"></div>
+    </div>
+  </div>
+  <div class="dv-btns">
+    <button class="b b-red" id="dvArrive" data-i18n="dv.arrive" onclick="driveArrive()"></button>
+    <button class="b b-blue" id="dvSave" data-i18n="btn.save" onclick="driveSave(false)" hidden></button>
+    <button class="b b-ghost" id="dvSaveRt" data-i18n="btn.saveReturn" onclick="driveSave(true)" hidden></button>
+    <button class="b b-ghost" id="dvEdit" data-i18n="dv.edit" onclick="driveClose()" hidden></button>
+  </div>
+</div>
+
 <div class="updbar" id="updBar" hidden>
   <span><span data-i18n="upd.msg"></span> <b id="updVer"></b></span>
   <button data-i18n="upd.btn" onclick="doUpdate()"></button>
@@ -275,7 +331,7 @@
     <div class="perm ok" id="permOk" hidden>
       <div class="perm-txt"><b data-i18n="perm.ok"></b></div>
     </div>
-    <div class="gps-box" id="gpsBox">
+    <div class="gps-box" id="gpsBox" onclick="driveReopen()">
       <div class="gps-live"><span id="gpsKm">0.0</span><span class="u" style="font-size:15px"> km</span></div>
       <div class="gps-meta" id="gpsMeta"></div>
     </div>
@@ -365,7 +421,7 @@
 (function(){
 "use strict";
 
-var APP_VER="2026-09-09a";
+var APP_VER="2026-09-11a";
 var K_REC="dh_fb_records_v2", K_SCH="dh_fb_schools_v1", K_LANG="dh_fb_lang", K_OLD="dh_fahrtenbuch_data";
 var OTHER="__other__";
 
@@ -421,6 +477,10 @@ ko:{
  "road.diff":"{0} km → 도로 최단거리 {1} km 로 바꿨습니다 (정산 {2} km)",
  "road.err":"거리 계산 서버에 연결하지 못했습니다 (인터넷 확인)",
  "upd.msg":"새 버전이 나왔습니다","upd.btn":"업데이트",
+ "dv.driving":"주행 중","dv.arrived":"도착","dv.from":"출발지","dv.to":"도착지",
+ "dv.arrive":"■ 도착","dv.close":"작게 보기","dv.edit":"직접 수정하기",
+ "dv.locating":"위치 확인 중…","dv.unknown":"미등록 장소","dv.meta":"{0} 경과 · 정확도 {1}",
+ "dv.metaDone":"{0} 주행 · 저장하면 {1} km로 정산됩니다","dv.noKm":"측정된 거리가 없습니다",
  "gps.at":"현재 위치: {0}","gps.atNone":"근처에 등록된 장소 없음","place.alt":"{0}  (같은 위치: {1})",
  "t.autoFrom":"출발지 자동 인식 · {0}","t.autoTo":"도착지 자동 인식 · {0}",
  "btn.here":"현재 위치로 지정","t.hereSet":"{0} 위치를 저장했습니다","t.hereFail":"현재 위치를 가져올 수 없습니다",
@@ -515,6 +575,10 @@ de:{
  "road.diff":"{0} km → auf {1} km Straßenroute geändert (Abrechnung {2} km)",
  "road.err":"Routing-Dienst nicht erreichbar (Internetverbindung prüfen)",
  "upd.msg":"Neue Version verfügbar","upd.btn":"Aktualisieren",
+ "dv.driving":"Fahrt läuft","dv.arrived":"Angekommen","dv.from":"Start","dv.to":"Ziel",
+ "dv.arrive":"■ Ziel erreicht","dv.close":"Verkleinern","dv.edit":"Manuell anpassen",
+ "dv.locating":"Standort wird ermittelt…","dv.unknown":"Unbekannter Ort","dv.meta":"{0} unterwegs · Genauigkeit {1}",
+ "dv.metaDone":"{0} gefahren · gespeichert werden {1} km","dv.noKm":"Keine Strecke gemessen",
  "gps.at":"Standort: {0}","gps.atNone":"Kein bekannter Ort in der Nähe","place.alt":"{0}  (gleiche Adresse: {1})",
  "t.autoFrom":"Start erkannt · {0}","t.autoTo":"Ziel erkannt · {0}",
  "btn.here":"Aktuellen Standort übernehmen","t.hereSet":"Standort für {0} gespeichert","t.hereFail":"Aktueller Standort nicht verfügbar",
@@ -715,6 +779,7 @@ function applyLang(){
   document.getElementById("mapHint").innerHTML=t("map.hint");
   updateMapLink();
   if(!gps.active) document.getElementById("gpsMeta").textContent=t("gps.idle");
+  if(drive.on){ if(drive.done) driveDone(); else driveTick(); }
   refreshHelp();
   renderPermUI();
   updatePlaceBtns();
@@ -954,10 +1019,12 @@ window.gpsStart=function(){
     if(!gps.active) return;
     if(gps.acc!=null){ setMeta(); }
     else if(Date.now()-gps.t0>12000){ document.getElementById("gpsMeta").textContent=t("gps.slow"); }
+    driveTick();
   },1000);
   if(navigator.wakeLock&&navigator.wakeLock.request){
     navigator.wakeLock.request("screen").then(function(w){ gps.wake=w; },function(){});
   }
+  driveOpen();
 };
 function onPos(p){
   var la=p.coords.latitude, lo=p.coords.longitude, ac=p.coords.accuracy;
@@ -978,6 +1045,7 @@ function onPos(p){
   }else{ gps.last={la:la,lo:lo}; }
   document.getElementById("gpsKm").textContent=gps.dist.toFixed(1);
   setMeta();
+  driveTick();
 }
 /* ---- environment detection + permission help ---- */
 var ENV=(function(){
@@ -1155,7 +1223,81 @@ window.gpsStop=function(){
   var km=Math.round(gps.dist*10)/10;
   document.getElementById("gpsMeta").textContent=km>0?t("gps.done",num(km.toFixed(1))):t("gps.none");
   if(km>0){ kmAuto=false; document.getElementById("rawKm").value=km.toFixed(1); previewRound(); }
+  driveDone();
 };
+
+/* ================= full-screen driving mode =================
+   출발을 누르면 전체 화면이 덮이고 «주행 중 · 출발지 · 거리 · 도착 버튼»만 남는다.
+   도착을 누르면 같은 화면이 출발지 → 도착지 요약으로 바뀌고 바로 저장으로 이어진다. */
+var drive={on:false,done:false};
+function dv(id){ return document.getElementById(id); }
+window.driveOpen=function(){
+  drive.on=true; drive.done=false;
+  var v=dv("driveView");
+  v.classList.remove("done");
+  v.hidden=false;
+  document.body.classList.add("driving");
+  dv("dvArrive").hidden=false;
+  dv("dvSave").hidden=true; dv("dvSaveRt").hidden=true; dv("dvEdit").hidden=true;
+  dv("dvToWrap").hidden=true; dv("dvArrow").hidden=true;
+  dv("dvKm").textContent="0.0";
+  driveTick();
+};
+window.driveClose=function(){
+  drive.on=false; drive.done=false;
+  dv("driveView").hidden=true;
+  document.body.classList.remove("driving");
+};
+/* tapping the small km box brings the full screen back while a trip is running */
+window.driveReopen=function(){ if(gps.active&&!drive.on) driveOpen(); };
+function driveTick(){
+  if(!drive.on||drive.done) return;
+  dv("dvState").textContent=t("dv.driving");
+  dv("dvFrom").textContent=val("fromSel","fromOther")||t("dv.locating");
+  dv("dvKm").textContent=num(gps.dist.toFixed(1));
+  if(gps.acc==null){ dv("dvMeta").textContent=t("gps.searching"); return; }
+  var s=Math.floor((Date.now()-gps.t0)/1000);
+  dv("dvMeta").textContent=t("dv.meta",Math.floor(s/60)+":"+pad(s%60),Math.round(gps.acc)+" m");
+}
+window.driveArrive=function(){
+  if(gps.active){ gpsStop(); return; }   /* gpsStop() calls driveDone() itself */
+  driveDone();
+};
+function driveDone(){
+  if(!drive.on) return;
+  drive.done=true;
+  dv("driveView").classList.add("done");
+  dv("dvState").textContent=t("dv.arrived");
+  dv("dvFrom").textContent=val("fromSel","fromOther")||t("dv.unknown");
+  dv("dvTo").textContent=val("toSel","toOther")||t("dv.unknown");
+  dv("dvToWrap").hidden=false; dv("dvArrow").hidden=false;
+  var from=val("fromSel","fromOther"), to=val("toSel","toOther");
+  var raw=parseFloat(document.getElementById("rawKm").value);
+  var ok=!(isNaN(raw)||raw<=0)&&!!from&&!!to&&from!==to;
+  if(isNaN(raw)||raw<=0){
+    dv("dvKm").textContent="0.0";
+    dv("dvMeta").textContent=t("dv.noKm");
+  }else{
+    dv("dvKm").textContent=num(raw.toFixed(1));
+    dv("dvMeta").textContent=t("dv.metaDone",num(raw.toFixed(1))+" km",roundPay(raw));
+  }
+  dv("dvArrive").hidden=true;
+  /* nothing worth saving (no distance, or start and destination are the same):
+     offer the form instead of a button that can only fail */
+  dv("dvSave").hidden=!ok; dv("dvSaveRt").hidden=!ok;
+  dv("dvEdit").hidden=false;
+  dv("dvEdit").className=ok?"b b-ghost":"b b-blue";
+}
+window.driveSave=function(rt){
+  /* saveTrip() refuses on a validation error and says why — the overlay must
+     then stay open, so compare the trip list instead of trusting the call */
+  var sig=tripSig();
+  saveTrip(rt===true);
+  if(tripSig()!==sig) driveClose();
+};
+function tripSig(){
+  return records.map(function(r){ return r.id+"|"+r.rawKm+"|"+(r.rt?1:0); }).join(",");
+}
 
 /* ================= form ================= */
 window.previewRound=function(){
